@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Login</title>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <link href="static/images/icons/login.svg" rel="icon" type="image/png"/>
+    <link href="static/css/login.css" rel="stylesheet"/>
+
+</head>
+<body>
+<nav class=js-nav>
+    <a href="/">Home</a>
+    <a href="#footer">Contact</a>
+    <a class=active href="#home">Log in</a>
+</nav>
+
+<div class="l-form" id="home">
+    <form class="form">
+        <h1 class="form__title">Log in</h1>
+
+        <div class="form__div" data-validate="Email is required">
+            <input inputmode="email" class="form__input" id="login" name="login" placeholder=" " required type="text">
+            <label class="form__label" for="login">Email</label>
+        </div>
+
+
+        <div class="form__div" data-validate="Password is required">
+            <input inputmode="text" class="form__input" id="password" name="password" placeholder=" " required
+                   type="password">
+            <label class="form__label" for="password">Password</label>
+        </div>
+
+        <button class="custom-btn btn-3" onclick="verifyCreds();" type="button">
+            <!-- formaction="/api/v1/login" formmethod="post" type="submit"-->
+            <span>Proceed</span>
+        </button>
+        <span id="status-text"></span>
+        <div class="status-wrap">
+            <div id="status" class="status"></div>
+        </div>
+    </form>
+</div>
+
+<footer class="footer" id="footer">
+    <div class="footer__row footer__row--1">
+        <div class="footer__col footer__col--1">
+            <h3 class="heading-3">Explore</h3>
+            <ul class="footer__list">
+                <li class="footer__items" onclick="location.href='https://milk-cool.github.io/letovo-nuts/';">Nuts at
+                    Letovo
+                </li>
+                <br/>
+                <li class="footer__items" onclick="location.href='https://s.letovo.ru/';">Letovo Student</li>
+                <br/>
+                <li class="footer__items" onclick="location.href='https://canvas.letovo.ru/';">Letovo Canvas</li>
+            </ul>
+        </div>
+        <div class="footer__col footer__col--4">
+            <ul class="footer__mail">
+                <li class="alert-heading" onclick="window.location='mailto:2024kurin.av@student.letovo.ru';"
+                    style="font-size:19px">2024kurin.av@student.letovo.ru
+                </li>
+            </ul>
+            <div class="footer__social">
+                <h2 class="heading">Social media</h2>
+                <a href="https://t.me/arsikurin">
+                    <img alt="logo-telegram"
+                         class="footer__icon" src="./static/images/icons/telegram-logo.png" width="48"/>
+                </a>
+                <a href="https://github.com/arsikurin">
+                    <img alt="logo-github"
+                         class="footer__icon" src="./static/images/icons/github-logo.png" width="48"/>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="footer__row footer__row--2">
+        <p class="footer__copyright">
+            &copy; Made with ❤️ by arsikurin
+        </p>
+    </div>
+</footer>
+
+<script>
+    "use strict";
+
+    if (!!document.querySelector && ("classList" in document.documentElement)) {
+        let wrapper = document.querySelector("header .wrapper");
+        let nav = document.querySelector("nav");
+        setTimeout(function () {
+            if (wrapper) wrapper.classList.add("wrapper--active");
+            if (nav) nav.classList.add("nav--active");
+        }, 300);
+    }
+</script>
+
+<script src="/static/js/login.js"></script>
+</body>
+</html>

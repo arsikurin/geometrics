@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ .error }}</title>
+    <link rel="icon" href="/static/images/icons/forbidden.svg"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/font-hack/2.018/css/hack.min.css"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        *,
+        *:before,
+        *:after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            color: #fff;
+        }
+
+        html {
+            font-size: 62.5%;
+        }
+
+        body {
+            background-color: rgb(25, 26, 27);
+            font-family: "Hack", monospace;
+        }
+
+        a {
+            text-decoration: none;
+            cursor: pointer;
+            color: rgb(60, 160, 250);
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .text__detail,
+        .text__error,
+        .text__link,
+        .text__fix {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            text-align: center;
+        }
+
+        .text__fix {
+            margin-top: 135px;
+            height: 30px;
+            line-height: 30px;
+            font-size: 1.5rem;
+        }
+
+        @media (max-width: 700px) {
+            .text__fix {
+                margin-top: 155px;
+            }
+        }
+
+        .text__detail {
+            margin-top: 95px;
+            height: 30px;
+            line-height: 30px;
+            font-size: 2rem;
+        }
+
+        .text__error {
+            margin-top: -35px;
+            height: 30px;
+            line-height: 30px;
+            font-size: 4rem;
+        }
+
+        .text__link {
+            margin-top: 5px;
+            height: 20px;
+            line-height: 20px;
+            font-size: 1.4rem;
+        }
+
+    </style>
+</head>
+
+<body>
+<div class="text__error" id="text__error" data-text="{{ .error }}"></div>
+<div class="text__detail">{{ .detail }}</div>
+<div class="text__fix">{{ .fix }}</div>
+<div class="text__link">
+    <a id="text__link" href="/" data-text="click here to go home"></a>
+</div>
+<script>
+    function setCharAt(str, index, chr) {
+        if (index > str.length - 1) return str;
+        return str.substr(0, index) + chr + str.substr(index + 1);
+    }
+
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-=+<>,./?[{()}]!@#$%^&*~`\|".split("");
+
+    let progressError = 0;
+    let totalError = document.getElementById("text__error").dataset["text"].length
+
+
+    let progressLink = 0;
+    let totalLink = document.getElementById("text__link").dataset["text"].length
+
+    let scrambleInterval = setInterval(() => {
+        let stringError = document.getElementById("text__error").dataset["text"]
+        let stringLink = document.getElementById("text__link").dataset["text"]
+
+        for (let i = 0; i < totalError; i++) {
+            if (i >= progressError) {
+                stringError = setCharAt(stringError, i, characters[Math.round(Math.random() * (characters.length - 1))]);
+            }
+        }
+
+        for (let i = 0; i < totalLink; i++) {
+            if (i >= progressLink) {
+                stringLink = setCharAt(stringLink, i, characters[Math.round(Math.random() * (characters.length - 1))]);
+            }
+        }
+        document.getElementById("text__error").textContent = stringError;
+        document.getElementById("text__link").textContent = stringLink;
+    }, 1000 / 60);
+
+    setTimeout(() => {
+        let revealInterval = setInterval(() => {
+            if (progressError < totalError) {
+                progressError++;
+            } else if (progressLink < totalLink) {
+                progressLink++;
+            } else {
+                clearInterval(revealInterval);
+                clearInterval(scrambleInterval);
+            }
+        }, 50);
+    }, 1000);
+</script>
+
+</body>
+</html>
