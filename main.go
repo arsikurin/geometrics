@@ -17,12 +17,15 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	_ "github.com/lib/pq"
+	"github.com/rs/zerolog"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"time"
 )
 
 func index() echo.HandlerFunc {
@@ -99,13 +102,28 @@ func customHTTPErrorHandler(err error, c echo.Context) {
 }
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	fmt.Println(`
+   ______                               __         _            
+  / ____/___   ____   ____ ___   ___   / /_ _____ (_)_____ _____
+ / / __ / _ \ / __ \ / __ '__ \ / _ \ / __// ___// // ___// ___/
+/ /_/ //  __// /_/ // / / / / //  __// /_ / /   / // /__ (__  ) 
+\____/ \___/ \____//_/ /_/ /_/ \___/ \__//_/   /_/ \___//____/  
+
+	`)
 
 	e := echo.New()
+	e.Debug = true
+	e.Logger.SetHeader(`{"level":"${level}","time":"${time_rfc3339}","prefix":"${prefix}","file":"${short_file}","line":"${line}"}`)
 	ctx := context.Background()
+	logger := zerolog.New(os.Stdout)
+
+	if e.Debug {
+		err := godotenv.Load(".env.development.local")
+		if err != nil {
+			e.Logger.Fatal("Error loading .env.development.local file")
+		}
+	}
+
 	db, err := sql.Open("postgres", fmt.Sprintf(
 		"dbname=%s host=%s user=%s password=%s sslmode=require",
 		os.Getenv("DBNAME"), os.Getenv("HOST"), os.Getenv("USER"), os.Getenv("PASSWORD"),
@@ -122,17 +140,33 @@ func main() {
 		}
 	}(db)
 
-	e.Debug = true
+	e.HideBanner = true
 	e.Renderer = &types.Template{Templates: template.Must(template.ParseGlob("public/*.html"))}
 	e.Validator = &types.CustomValidator{Validator: validator.New()}
 	e.HTTPErrorHandler = customHTTPErrorHandler
 	e.Static("/static", "public/static")
 
 	// Middleware
-	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.RemoveTrailingSlashWithConfig(middleware.TrailingSlashConfig{
 		RedirectCode: http.StatusMovedPermanently,
+	}))
+	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
+		LogURI:    true,
+		LogStatus: true,
+		LogMethod: true,
+		LogError:  true,
+		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+			logger.Info().
+				Str("URI", v.URI).
+				Int("status", v.Status).
+				Str("method", v.Method).
+				Time("time", v.StartTime).
+				Err(v.Error).
+				Msg("request")
+
+			return nil
+		},
 	}))
 
 	e.GET("/", index())
@@ -184,5 +218,19 @@ func main() {
 		admin.GET("", restricted)
 	}
 
-	e.Logger.Fatal(e.Start(":1323"))
+	// Graceful shutdown
+	go func() {
+		if err := e.Start(":1323"); err != nil && err != http.ErrServerClosed {
+			e.Logger.Fatal("shutting down the server")
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	if err := e.Shutdown(ctx); err != nil {
+		e.Logger.Fatal(err)
+	}
 }
