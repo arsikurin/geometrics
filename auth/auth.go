@@ -3,29 +3,31 @@ package auth
 import (
 	"crypto/rsa"
 	"fmt"
-	"geometrics/models"
-	"github.com/golang-jwt/jwt"
-	"io/ioutil"
+	"os"
 	"time"
+
+	"github.com/golang-jwt/jwt"
+
+	"geometrics/models"
+	"geometrics/types"
 )
 
-type JwtCustomClaims struct {
+type JWTCustomClaims struct {
 	ID      int    `json:"id"`
 	Name    string `json:"name"`
-	IsAdmin bool   `json:"is_admin"`
+	IsAdmin bool   `json:"is_admin"` // is admin json check register
 	jwt.StandardClaims
 }
 
 func GenerateAccessToken(user *models.User) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodRS256, &JwtCustomClaims{
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, &JWTCustomClaims{
 		ID:   user.ID,
 		Name: fmt.Sprintf("%s %s", user.FirstName, user.LastName),
 		IsAdmin: func() bool {
-			if user.Type == 2 {
+			if user.Type == int(types.Admin) {
 				return true
-			} else {
-				return false
 			}
+			return false
 		}(),
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
@@ -41,17 +43,19 @@ func GenerateAccessToken(user *models.User) (string, error) {
 }
 
 func GetRSAPublicKey() (*rsa.PublicKey, error) {
-	keyData, err := ioutil.ReadFile("./id.rsa.pub.pkcs8")
+	keyData, err := os.ReadFile("./id.rsa.pub.pkcs8")
 	if err != nil {
 		return nil, err
 	}
+
 	return jwt.ParseRSAPublicKeyFromPEM(keyData)
 }
 
 func GetRSAPrivateKey() (*rsa.PrivateKey, error) {
-	keyData, err := ioutil.ReadFile("./id.rsa")
+	keyData, err := os.ReadFile("./id.rsa")
 	if err != nil {
 		return nil, err
 	}
+
 	return jwt.ParseRSAPrivateKeyFromPEM(keyData)
 }

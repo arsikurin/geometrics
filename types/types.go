@@ -2,12 +2,34 @@ package types
 
 import (
 	"fmt"
-	"github.com/go-playground/validator"
-	"github.com/labstack/echo/v4"
 	"html/template"
 	"io"
 	"net/http"
+
+	"github.com/go-playground/validator"
+	"github.com/labstack/echo/v4"
 )
+
+type UserType int
+
+const (
+	Student UserType = iota
+	Teacher UserType = iota
+	Admin   UserType = iota
+)
+
+func (ut UserType) String() string {
+	switch ut {
+	case Student:
+		return "Student"
+	case Teacher:
+		return "Teacher"
+	case Admin:
+		return "Admin"
+	default:
+		return "unknown"
+	}
+}
 
 type Template struct {
 	Templates *template.Template
@@ -27,7 +49,7 @@ type (
 		Validator *validator.Validate
 	}
 
-	ApiError struct {
+	APIError struct {
 		Field   string
 		Message string
 	}
@@ -36,41 +58,40 @@ type (
 func (cv *CustomValidator) Validate(i interface{}) error {
 	if err := cv.Validator.Struct(i); err != nil {
 		if ves, ok := err.(validator.ValidationErrors); ok {
-			out := make([]ApiError, len(ves))
+			out := make([]APIError, len(ves))
 
 			for i, ve := range ves {
 				switch ve.Tag() {
 				case "required":
-					out[i] = ApiError{
+					out[i] = APIError{
 						Field:   ve.Field(),
 						Message: "This field is required",
 					}
 				case "email":
-					out[i] = ApiError{
+					out[i] = APIError{
 						Field:   ve.Field(),
 						Message: "Invalid email",
 					}
 				case "gte":
-					out[i] = ApiError{
+					out[i] = APIError{
 						Field:   ve.Field(),
 						Message: fmt.Sprintf("Must be greater than %s", ve.Param()),
 					}
 				case "lte":
-					out[i] = ApiError{
+					out[i] = APIError{
 						Field:   ve.Field(),
 						Message: fmt.Sprintf("Must be less than %s", ve.Param()),
 					}
 				default:
-					out[i] = ApiError{
+					out[i] = APIError{
 						Field:   ve.Field(),
 						Message: err.Error(),
 					}
 				}
 			}
 			return echo.NewHTTPError(http.StatusBadRequest, out)
-		} else {
-			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	return nil
 }

@@ -8,9 +8,15 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"geometrics/auth"
-	apiH "geometrics/handlers/api"
-	"geometrics/types"
+	"html/template"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/go-playground/validator"
 	"github.com/golang-jwt/jwt"
 	"github.com/joho/godotenv"
@@ -19,13 +25,10 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-	"html/template"
-	"log"
-	"net/http"
-	"os"
-	"os/signal"
-	"strings"
-	"time"
+
+	"geometrics/auth"
+	apiH "geometrics/handlers/api"
+	"geometrics/types"
 )
 
 func index() echo.HandlerFunc {
@@ -35,41 +38,41 @@ func index() echo.HandlerFunc {
 }
 
 func restricted(c echo.Context) error {
-	//cookie, err := c.Cookie("token")
-	//if err != nil {
+	// cookie, err := c.Cookie("token")
+	// if err != nil {
 	//	if err == http.ErrNoCookie {
 	//		return c.String(http.StatusUnauthorized, "no cookie")
 	//	}
 	//	return c.String(http.StatusBadRequest, err.Error())
-	//}
+	// }
 	//
-	//claims := &types.JwtCustomClaims{}
+	// claims := &types.JWTCustomClaims{}
 	//
-	//tkn, err := jwt.ParseWithClaims(cookie.Value, claims, func(token *jwt.Token) (interface{}, error) {
+	// tkn, err := jwt.ParseWithClaims(cookie.Value, claims, func(token *jwt.Token) (interface{}, error) {
 	//	return auth.GetRSAPublicKey()
-	//})
-	//if err != nil {
+	// })
+	// if err != nil {
 	//	if err == jwt.ErrSignatureInvalid {
 	//		return c.String(http.StatusUnauthorized, "sig invalid")
 	//	}
 	//	return c.String(http.StatusBadRequest, err.Error())
-	//}
-	//if !tkn.Valid {
+	// }
+	// if !tkn.Valid {
 	//	return c.String(http.StatusUnauthorized, "token invalid")
-	//}
+	// }
 	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(*auth.JwtCustomClaims)
+	claims := user.Claims.(*auth.JWTCustomClaims)
 
-	return c.String(http.StatusOK, "Welcome "+claims.Name+"!")
+	return c.String(http.StatusOK, "["+strconv.FormatBool(claims.IsAdmin)+"] Welcome "+claims.Name+"!")
 }
 
 func customHTTPErrorHandler(err error, c echo.Context) {
 	code := http.StatusInternalServerError
 	title := fmt.Sprintf("%d Internal Server Error", code)
-	var detail []types.ApiError
+	var detail []types.APIError
 
 	if he, ok := err.(*echo.HTTPError); ok {
-		if detail, ok = he.Message.([]types.ApiError); ok {
+		if detail, ok = he.Message.([]types.APIError); ok {
 			code = he.Code
 			title = fmt.Sprintf("%d Validation Failed", code)
 		} else if message, ok := he.Message.(string); ok && message == "missing or malformed jwt" {
@@ -93,7 +96,7 @@ func customHTTPErrorHandler(err error, c echo.Context) {
 	} else {
 		if err := c.Render(code, "error.html", map[string]interface{}{
 			"error": title,
-			//"detail": detail,
+			// "detail": detail,
 		}); err != nil {
 			c.Logger().Error(err)
 		}
@@ -126,7 +129,7 @@ func main() {
 
 	db, err := sql.Open("postgres", fmt.Sprintf(
 		"dbname=%s host=%s user=%s password=%s sslmode=require",
-		os.Getenv("DBNAME"), os.Getenv("HOST"), os.Getenv("USER"), os.Getenv("PASSWORD"),
+		os.Getenv("PG_DBNAME"), os.Getenv("PG_HOST"), os.Getenv("PG_USER"), os.Getenv("PG_PASSWORD"),
 	))
 	if err != nil {
 		e.Logger.Error(err)
@@ -187,7 +190,7 @@ func main() {
 			}
 
 			problems.Use(middleware.JWTWithConfig(middleware.JWTConfig{
-				Claims:        &auth.JwtCustomClaims{},
+				Claims:        &auth.JWTCustomClaims{},
 				SigningKey:    key,
 				TokenLookup:   "header:Authorization,cookie:token",
 				SigningMethod: "RS256",
@@ -209,7 +212,7 @@ func main() {
 		}
 
 		admin.Use(middleware.JWTWithConfig(middleware.JWTConfig{
-			Claims:        &auth.JwtCustomClaims{},
+			Claims:        &auth.JWTCustomClaims{},
 			SigningKey:    key,
 			TokenLookup:   "header:Authorization,cookie:token",
 			SigningMethod: "RS256",
