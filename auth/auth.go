@@ -30,7 +30,7 @@ func GenerateAccessToken(user *models.User) (string, error) {
 			return false
 		}(),
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
+			ExpiresAt: time.Now().Add(time.Hour * 24).Unix(), //nolint:gomnd
 		},
 	})
 

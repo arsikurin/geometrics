@@ -1,0 +1,25 @@
+linters:
+  enable-all: true
+  disable:
+    - nosnakecase
+    - interfacer
+    - varcheck
+    - golint
+    - scopelint
+    - exhaustivestruct
+    - maligned
+    - structcheck
+    - deadcode
+    - ifshort
+    - rowserrcheck
+    - sqlclosecheck
+    - structcheck
+    - wastedassign
+    - exhaustruct
+    - varnamelen
+    - gofumpt # too lazy to implement
+    - gci     # the same goes for gci
+
+issues:
+  exclude:
+    - "dot-imports: should not use dot imports"
