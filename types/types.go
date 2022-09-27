@@ -10,6 +10,27 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+type ProblemResult int
+
+const (
+	OK      ProblemResult = iota
+	WA      ProblemResult = iota
+	Invalid ProblemResult = iota
+)
+
+func (pr ProblemResult) String() string {
+	switch pr {
+	case OK:
+		return "Correct"
+	case WA:
+		return "Wrong answer"
+	case Invalid:
+		return "Not allowed to use this"
+	default:
+		return "unknown"
+	}
+}
+
 type UserType int
 
 const (
@@ -40,9 +61,13 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, _ echo.Con
 }
 
 type (
-	LoginCreds struct {
+	LoginCredsReq struct {
 		Login    string `json:"login" validate:"required,email"`
 		Password string `json:"password" validate:"required,gte=8,lte=30"`
+	}
+
+	ProblemCheckReq struct {
+		GgbBase64 string `json:"ggb_base64" validate:"required"` // ,base64"`
 	}
 
 	CustomValidator struct {

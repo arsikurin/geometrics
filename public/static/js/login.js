@@ -68,7 +68,7 @@ function obtainToken(login, password) {
     }));
 
     if (xhr.status === 200) {
-        location.replace("/admin");
+        location.replace("/profiles");
     }
 
     return JSON.parse(xhr.responseText);

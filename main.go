@@ -37,7 +37,7 @@ func index() echo.HandlerFunc {
 	}
 }
 
-func restricted(c echo.Context) error {
+func adminPage(c echo.Context) error {
 	// cookie, err := c.Cookie("token")
 	// if err != nil {
 	//	if err == http.ErrNoCookie {
@@ -139,7 +139,7 @@ func main() {
 	defer func(db *sql.DB) {
 		err := db.Close()
 		if err != nil {
-			e.Logger.Fatal(err.Error())
+			e.Logger.Error(err.Error())
 		}
 	}(db)
 
@@ -175,6 +175,58 @@ func main() {
 	e.GET("/", index())
 	e.File("/login", "public/login.html")
 
+	restricted := e.Group("")
+	{
+		key, err := auth.GetRSAPublicKey()
+		if err != nil {
+			log.Println(err)
+		}
+
+		restricted.Use(middleware.JWTWithConfig(middleware.JWTConfig{
+			Claims:        &auth.JWTCustomClaims{},
+			SigningKey:    key,
+			TokenLookup:   "header:Authorization,cookie:token",
+			SigningMethod: "RS256",
+		}))
+
+		restricted.GET("/profiles", func(c echo.Context) error {
+			user := c.Get("user").(*jwt.Token)
+			claims := user.Claims.(*auth.JWTCustomClaims)
+
+			return c.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("/profiles/%d", claims.ID))
+		})
+		restricted.GET("/profiles/:id", func(c echo.Context) error {
+			id := c.Param("id")
+			user := c.Get("user").(*jwt.Token)
+			claims := user.Claims.(*auth.JWTCustomClaims)
+			name := claims.Name
+
+			return c.String(http.StatusOK, "profile "+id+" "+name)
+		})
+
+		restricted.GET("/problems/:id", func(c echo.Context) error {
+			id := c.Param("id")
+			action := c.QueryParam("action")
+			if action == "" {
+				action = "view"
+			}
+			user := c.Get("user").(*jwt.Token)
+			claims := user.Claims.(*auth.JWTCustomClaims)
+			name := claims.Name
+
+			return c.String(http.StatusOK, "problem "+id+" "+name)
+		})
+
+		restricted.GET("/courses/:id", func(c echo.Context) error {
+			id := c.Param("id")
+			user := c.Get("user").(*jwt.Token)
+			claims := user.Claims.(*auth.JWTCustomClaims)
+			name := claims.Name
+
+			return c.String(http.StatusOK, "course "+id+" "+name)
+		})
+	}
+
 	// API group
 	apiG := e.Group("/api/v1")
 	{
@@ -184,17 +236,17 @@ func main() {
 		// Problems group
 		problems := apiG.Group("/problems")
 		{
-			key, err := auth.GetRSAPublicKey()
-			if err != nil {
-				log.Println(err)
-			}
+			// key, err := auth.GetRSAPublicKey()
+			// if err != nil {
+			// 	log.Println(err)
+			// }
 
-			problems.Use(middleware.JWTWithConfig(middleware.JWTConfig{
-				Claims:        &auth.JWTCustomClaims{},
-				SigningKey:    key,
-				TokenLookup:   "header:Authorization,cookie:token",
-				SigningMethod: "RS256",
-			}))
+			// problems.Use(middleware.JWTWithConfig(middleware.JWTConfig{
+			// 	Claims:        &auth.JWTCustomClaims{},
+			// 	SigningKey:    key,
+			// 	TokenLookup:   "header:Authorization,cookie:token",
+			// 	SigningMethod: "RS256",
+			// }))
 
 			problems.GET("/:id", apiH.ProblemsGET)
 			problems.POST("/:id", apiH.ProblemsPOST)
@@ -203,7 +255,7 @@ func main() {
 		}
 	}
 
-	// Restricted group
+	// Admin group
 	admin := e.Group("/admin")
 	{
 		key, err := auth.GetRSAPublicKey()
@@ -218,7 +270,7 @@ func main() {
 			SigningMethod: "RS256",
 		}))
 
-		admin.GET("", restricted)
+		admin.GET("", adminPage)
 	}
 
 	// Graceful shutdown
