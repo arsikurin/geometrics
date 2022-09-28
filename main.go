@@ -17,6 +17,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/friendsofgo/errors"
 	"github.com/go-playground/validator"
 	"github.com/golang-jwt/jwt"
 	"github.com/joho/godotenv"
@@ -25,9 +26,11 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	. "github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 	"geometrics/auth"
 	apiH "geometrics/handlers/api"
+	"geometrics/models"
 	"geometrics/types"
 )
 
@@ -154,6 +157,10 @@ func main() {
 	e.Use(middleware.RemoveTrailingSlashWithConfig(middleware.TrailingSlashConfig{
 		RedirectCode: http.StatusMovedPermanently,
 	}))
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{http.MethodGet, http.MethodPost},
+	}))
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogURI:    true,
 		LogStatus: true,
@@ -189,6 +196,8 @@ func main() {
 			SigningMethod: "RS256",
 		}))
 
+		restricted.File("test", "public/test.html")
+
 		restricted.GET("/profiles", func(c echo.Context) error {
 			user := c.Get("user").(*jwt.Token)
 			claims := user.Claims.(*auth.JWTCustomClaims)
@@ -197,11 +206,28 @@ func main() {
 		})
 		restricted.GET("/profiles/:id", func(c echo.Context) error {
 			id := c.Param("id")
-			user := c.Get("user").(*jwt.Token)
-			claims := user.Claims.(*auth.JWTCustomClaims)
+			claims := c.Get("user").(*jwt.Token).Claims.(*auth.JWTCustomClaims)
 			name := claims.Name
 
-			return c.String(http.StatusOK, "profile "+id+" "+name)
+			if isExists, err := models.Users(Where("id=?", claims.Id)).ExistsG(ctx); !isExists {
+				if err != nil {
+					return err
+				}
+				return c.JSON(http.StatusUnauthorized, echo.Map{
+					"code":   http.StatusUnauthorized,
+					"status": "error",
+					"message": fmt.Sprintf(
+						"%d %s", http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized),
+					),
+					"detail": "user not exists",
+				})
+			}
+			user, err := models.Users(Where("id=?", claims.ID)).OneG(ctx)
+			if err != nil {
+				return err
+			}
+
+			return c.String(http.StatusOK, fmt.Sprintf("profile %s %s %d %v %v %s %s", id, name, user.Type, user.Grade, user.School, user.CreatedAt, user.Timezone))
 		})
 
 		restricted.GET("/problems/:id", func(c echo.Context) error {
@@ -218,12 +244,36 @@ func main() {
 		})
 
 		restricted.GET("/courses/:id", func(c echo.Context) error {
-			id := c.Param("id")
+			id, err := strconv.Atoi(c.Param("id"))
+			if err != nil {
+				return errors.WithMessage(err, "Not int ID /courses")
+			}
 			user := c.Get("user").(*jwt.Token)
 			claims := user.Claims.(*auth.JWTCustomClaims)
-			name := claims.Name
 
-			return c.String(http.StatusOK, "course "+id+" "+name)
+			if isExists, err := models.Courses(Where("id=?", id)).ExistsG(ctx); !isExists {
+				if err != nil {
+					return err
+				}
+				return echo.ErrNotFound
+			}
+
+			courseProblems, err := models.Problems(
+				InnerJoin(fmt.Sprintf("%s on %s=%s",
+					models.TableNames.CoursesProblems, models.CoursesProblemTableColumns.ProblemID, models.ProblemTableColumns.ID)),
+				models.CoursesProblemWhere.CourseID.EQ(id),
+			).AllG(ctx)
+			if err != nil {
+				return err
+			}
+
+			for _, problem := range courseProblems {
+				fmt.Println(problem.ID)
+				fmt.Println(problem.Name)
+				fmt.Println(problem.Description)
+			}
+
+			return c.String(http.StatusOK, "course "+claims.Name)
 		})
 	}
 
@@ -236,17 +286,17 @@ func main() {
 		// Problems group
 		problems := apiG.Group("/problems")
 		{
-			// key, err := auth.GetRSAPublicKey()
-			// if err != nil {
-			// 	log.Println(err)
-			// }
+			key, err := auth.GetRSAPublicKey()
+			if err != nil {
+				log.Println(err)
+			}
 
-			// problems.Use(middleware.JWTWithConfig(middleware.JWTConfig{
-			// 	Claims:        &auth.JWTCustomClaims{},
-			// 	SigningKey:    key,
-			// 	TokenLookup:   "header:Authorization,cookie:token",
-			// 	SigningMethod: "RS256",
-			// }))
+			problems.Use(middleware.JWTWithConfig(middleware.JWTConfig{
+				Claims:        &auth.JWTCustomClaims{},
+				SigningKey:    key,
+				TokenLookup:   "header:Authorization,cookie:token",
+				SigningMethod: "RS256",
+			}))
 
 			problems.GET("/:id", apiH.ProblemsGET)
 			problems.POST("/:id", apiH.ProblemsPOST)

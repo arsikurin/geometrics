@@ -67,7 +67,7 @@ type (
 	}
 
 	ProblemCheckReq struct {
-		GgbBase64 string `json:"ggb_base64" validate:"required"` // ,base64"`
+		GgbBase64 string `json:"ggb_base64" validate:"required,base64"`
 	}
 
 	CustomValidator struct {
