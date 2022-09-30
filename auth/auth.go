@@ -13,7 +13,7 @@ import (
 )
 
 type JWTCustomClaims struct {
-	ID      int    `json:"id"`
+	UserID  int    `json:"id"`
 	Name    string `json:"name"`
 	IsAdmin bool   `json:"is_admin"` // is admin json check register
 	jwt.StandardClaims
@@ -21,8 +21,8 @@ type JWTCustomClaims struct {
 
 func GenerateAccessToken(user *models.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, &JWTCustomClaims{
-		ID:   user.ID,
-		Name: fmt.Sprintf("%s %s", user.FirstName, user.LastName),
+		UserID: user.ID,
+		Name:   fmt.Sprintf("%s %s", user.FirstName, user.LastName),
 		IsAdmin: func() bool {
 			if user.Type == int(types.Admin) {
 				return true

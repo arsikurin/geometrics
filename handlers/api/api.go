@@ -1,0 +1,137 @@
+package api
+
+import (
+	"bytes"
+	"context"
+	"fmt"
+	"net/http"
+	"os/exec"
+	"strconv"
+	"time"
+
+	"github.com/friendsofgo/errors"
+	"github.com/golang-jwt/jwt"
+	"github.com/labstack/echo/v4"
+	. "github.com/volatiletech/sqlboiler/v4/queries/qm"
+
+	"geometrics/auth"
+	"geometrics/models"
+	"geometrics/types"
+)
+
+func GETProblemByID(c echo.Context) error {
+	id := c.Param("id")
+	action := c.QueryParam("action")
+	if action == "" {
+		action = "view"
+	}
+
+	return c.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("/problems/%s?action=%s", id, action))
+}
+func POSTProblemByID(c echo.Context) error {
+	id := c.Param("id")
+	// user := c.Get("user").(*jwt.Token)
+	// claims := user.Claims.(*auth.JWTCustomClaims)
+
+	pcr := new(types.ProblemCheckReq)
+	if err := c.Bind(pcr); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := c.Validate(pcr); err != nil {
+		return err
+	}
+
+	var out bytes.Buffer
+	var scriptErr bytes.Buffer
+	cmd := exec.Command("/usr/local/bin/python", "main.py", id, pcr.GgbBase64)
+	cmd.Stdout = &out
+	cmd.Stderr = &scriptErr
+
+	err := cmd.Run()
+	if err != nil {
+		return errors.WithMessage(err, fmt.Sprintf("Python checker failed: %s", scriptErr.String()))
+	}
+
+	res, err := strconv.Atoi(out.String())
+	if err != nil {
+		return errors.WithMessage(err, "Not int response from python checker")
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{
+		"code":   http.StatusOK,
+		"status": "ok",
+		"result": res,
+	})
+}
+func PUTProblemByID(c echo.Context) error {
+	id := c.Param("id")
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*auth.JWTCustomClaims)
+	name := claims.Name
+
+	return c.String(http.StatusOK, "method PUT "+id+" "+name)
+}
+func DELETEProblemByID(c echo.Context) error {
+	id := c.Param("id")
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*auth.JWTCustomClaims)
+	name := claims.Name
+
+	return c.String(http.StatusOK, "method DELETE "+id+" "+name)
+}
+
+func Login(ctx context.Context) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		lcr := new(types.LoginCredsReq)
+		if err := c.Bind(lcr); err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
+		if err := c.Validate(lcr); err != nil {
+			return err
+		}
+
+		// username := c.FormValue("login")
+		// password := c.FormValue("password")
+		if isExists, err := models.Users(Where("login=?", lcr.Login)).ExistsG(ctx); !isExists {
+			if err != nil {
+				return err
+			}
+			return c.JSON(http.StatusUnauthorized, echo.Map{
+				"code":   http.StatusUnauthorized,
+				"status": "error",
+				"message": fmt.Sprintf(
+					"%d %s", http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized),
+				),
+				"detail": "invalid credentials",
+			})
+		}
+		user, err := models.Users(Where("login=?", lcr.Login)).OneG(ctx)
+		if err != nil {
+			return err
+		}
+
+		if lcr.Password != user.Password {
+			return echo.ErrUnauthorized
+		}
+
+		t, err := auth.GenerateAccessToken(user)
+		if err != nil {
+			return err
+		}
+
+		c.SetCookie(&http.Cookie{
+			Name:     "token",
+			Value:    t,
+			Path:     "/",
+			Expires:  time.Now().Add(time.Hour * 24), //nolint:gomnd
+			Secure:   false,
+			HttpOnly: true,
+		})
+
+		return c.JSON(http.StatusOK, echo.Map{
+			"code":   http.StatusOK,
+			"status": "ok",
+			"token":  t,
+		})
+	}
+}
