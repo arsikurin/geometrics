@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/friendsofgo/errors"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	. "github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -20,13 +21,15 @@ func GETCourseByID(ctx context.Context) echo.HandlerFunc {
 		if err != nil {
 			return echo.ErrNotFound
 		}
+
 		user := c.Get("user").(*jwt.Token)
 		claims := user.Claims.(*auth.JWTCustomClaims)
 
 		if isExists, err := models.Courses(Where("id=?", id)).ExistsG(ctx); !isExists {
 			if err != nil {
-				return err
+				return errors.WithMessage(err, "check whether user exists failed in get course by id")
 			}
+
 			return echo.ErrNotFound
 		}
 
@@ -36,7 +39,7 @@ func GETCourseByID(ctx context.Context) echo.HandlerFunc {
 			models.CoursesProblemWhere.CourseID.EQ(id),
 		).AllG(ctx)
 		if err != nil {
-			return err
+			return errors.WithMessage(err, "inner join failed in get course by id")
 		}
 
 		for _, problem := range courseProblems {

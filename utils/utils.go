@@ -30,8 +30,8 @@ func UseAuth(group *echo.Group) {
 func CustomHTTPErrorHandler(err error, c echo.Context) {
 	code := http.StatusInternalServerError
 	title := fmt.Sprintf("%d Internal Server Error", code)
-	var detail []types.APIError
 
+	var detail []types.APIError
 	if he, ok := err.(*echo.HTTPError); ok {
 		if detail, ok = he.Message.([]types.APIError); ok {
 			code = he.Code
@@ -62,5 +62,6 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 			c.Logger().Error(err)
 		}
 	}
+
 	c.Logger().Error(err)
 }

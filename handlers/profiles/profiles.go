@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/friendsofgo/errors"
 	. "github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 	"github.com/golang-jwt/jwt"
@@ -21,13 +22,15 @@ func GETProfileByID(ctx context.Context) echo.HandlerFunc {
 		if err != nil {
 			return echo.ErrNotFound
 		}
+
 		claims := c.Get("user").(*jwt.Token).Claims.(*auth.JWTCustomClaims)
 		name := claims.Name
 
 		if isExists, err := models.Users(Where("id=?", claims.UserID)).ExistsG(ctx); !isExists {
 			if err != nil {
-				return err
+				return errors.WithMessage(err, "check whether user exists failed in get profile by id")
 			}
+
 			return c.JSON(http.StatusUnauthorized, echo.Map{
 				"code":   http.StatusUnauthorized,
 				"status": "error",
@@ -37,9 +40,10 @@ func GETProfileByID(ctx context.Context) echo.HandlerFunc {
 				"detail": "user not exists",
 			})
 		}
+
 		user, err := models.Users(Where("id=?", claims.UserID)).OneG(ctx)
 		if err != nil {
-			return err
+			return errors.WithMessage(err, "get user from the db failed in get profile by id")
 		}
 
 		return c.String(http.StatusOK, fmt.Sprintf("profile %d %s %d %v %v %s %s", id, name, user.Type, user.Grade, user.School, user.CreatedAt, user.Timezone))

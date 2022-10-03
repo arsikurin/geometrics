@@ -21,6 +21,7 @@ import (
 
 func GETProblemByID(c echo.Context) error {
 	id := c.Param("id")
+
 	action := c.QueryParam("action")
 	if action == "" {
 		action = "view"
@@ -94,8 +95,9 @@ func Login(ctx context.Context) echo.HandlerFunc {
 		// password := c.FormValue("password")
 		if isExists, err := models.Users(Where("login=?", lcr.Login)).ExistsG(ctx); !isExists {
 			if err != nil {
-				return err
+				return errors.WithMessage(err, "check whether user exists failed in login")
 			}
+
 			return c.JSON(http.StatusUnauthorized, echo.Map{
 				"code":   http.StatusUnauthorized,
 				"status": "error",
@@ -105,9 +107,10 @@ func Login(ctx context.Context) echo.HandlerFunc {
 				"detail": "invalid credentials",
 			})
 		}
+
 		user, err := models.Users(Where("login=?", lcr.Login)).OneG(ctx)
 		if err != nil {
-			return err
+			return errors.WithMessage(err, "get user from the db failed in login")
 		}
 
 		if lcr.Password != user.Password {
@@ -116,7 +119,7 @@ func Login(ctx context.Context) echo.HandlerFunc {
 
 		t, err := auth.GenerateAccessToken(user)
 		if err != nil {
-			return err
+			return errors.WithMessage(err, "generate access token failed in login")
 		}
 
 		c.SetCookie(&http.Cookie{

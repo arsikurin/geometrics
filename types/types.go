@@ -67,7 +67,7 @@ type (
 	}
 
 	ProblemCheckReq struct {
-		GgbBase64 string `json:"ggb_base64" validate:"required,base64"`
+		GgbBase64 string `json:"ggb_base64" validate:"required,base64"` //nolint:tagliatelle
 	}
 
 	CustomValidator struct {
@@ -114,9 +114,12 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 					}
 				}
 			}
+
 			return echo.NewHTTPError(http.StatusBadRequest, out)
 		}
+
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
+
 	return nil
 }

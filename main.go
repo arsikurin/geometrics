@@ -44,6 +44,7 @@ func main() {
 	e := echo.New()
 	e.Debug = true
 	e.Logger.SetHeader(`{"level":"${level}","time":"${time_rfc3339}","prefix":"${prefix}","file":"${short_file}","line":"${line}"}`)
+
 	ctx := context.Background()
 	logger := zerolog.New(os.Stdout)
 
@@ -61,8 +62,8 @@ func main() {
 	if err != nil {
 		e.Logger.Error(err)
 	}
-	boil.SetDB(db)
 
+	boil.SetDB(db)
 	defer func(db *sql.DB) {
 		err := db.Close()
 		if err != nil {
@@ -158,8 +159,10 @@ func main() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
 	<-quit
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10) //nolint:gomnd
 	defer cancel()
+
 	if err := e.Shutdown(ctx); err != nil {
 		e.Logger.Fatal(err)
 	}

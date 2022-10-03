@@ -22,4 +22,4 @@ linters:
 
 issues:
   exclude:
-    - "dot-imports: should not use dot imports"
+    - "should not use dot imports"

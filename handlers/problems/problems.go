@@ -17,10 +17,12 @@ func GETProblemByID(ctx context.Context) echo.HandlerFunc {
 		if err != nil {
 			return echo.ErrNotFound
 		}
+
 		action := c.QueryParam("action")
 		if action == "" {
 			action = "view"
 		}
+
 		user := c.Get("user").(*jwt.Token)
 		claims := user.Claims.(*auth.JWTCustomClaims)
 		name := claims.Name
