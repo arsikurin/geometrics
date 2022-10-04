@@ -7,11 +7,9 @@ import (
 	"strconv"
 
 	"github.com/friendsofgo/errors"
-	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	. "github.com/volatiletech/sqlboiler/v4/queries/qm"
 
-	"geometrics/auth"
 	"geometrics/models"
 )
 
@@ -21,9 +19,6 @@ func GETCourseByID(ctx context.Context) echo.HandlerFunc {
 		if err != nil {
 			return echo.ErrNotFound
 		}
-
-		user := c.Get("user").(*jwt.Token)
-		claims := user.Claims.(*auth.JWTCustomClaims)
 
 		if isExists, err := models.Courses(Where("id=?", id)).ExistsG(ctx); !isExists {
 			if err != nil {
@@ -37,17 +32,32 @@ func GETCourseByID(ctx context.Context) echo.HandlerFunc {
 			InnerJoin(fmt.Sprintf("%s on %s=%s",
 				models.TableNames.CoursesProblems, models.CoursesProblemTableColumns.ProblemID, models.ProblemTableColumns.ID)),
 			models.CoursesProblemWhere.CourseID.EQ(id),
+			OrderBy(models.ProblemColumns.Name),
 		).AllG(ctx)
 		if err != nil {
 			return errors.WithMessage(err, "inner join failed in get course by id")
 		}
 
-		for _, problem := range courseProblems {
-			fmt.Println(problem.ID)
-			fmt.Println(problem.Name)
-			fmt.Println(problem.Description)
+		course, err := models.Courses(
+			Select(models.CourseColumns.Name, models.CourseColumns.Description, models.CourseColumns.AuthorID),
+			models.CourseWhere.ID.EQ(id),
+		).OneG(ctx)
+		if err != nil {
+			return errors.WithMessage(err, "get course failed in get course by id")
 		}
 
-		return c.String(http.StatusOK, "course "+claims.Name)
+		author, err := models.Users(
+			Select(models.UserColumns.FirstName, models.UserColumns.LastName),
+			models.UserWhere.ID.EQ(course.AuthorID),
+		).OneG(ctx)
+		if err != nil {
+			return errors.WithMessage(err, "get author failed in get course by id")
+		}
+
+		return c.Render(http.StatusOK, "course.html", map[string]interface{}{
+			"author":   fmt.Sprintf("%s %s", author.FirstName, author.LastName),
+			"course":   course,
+			"problems": courseProblems,
+		})
 	}
 }

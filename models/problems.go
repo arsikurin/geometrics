@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,10 +23,10 @@ import (
 
 // Problem is an object representing the database table.
 type Problem struct {
-	ID          int         `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name        string      `boil:"name" json:"name" toml:"name" yaml:"name"`
-	Description null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
-	SolutionRaw string      `boil:"solution_raw" json:"solution_raw" toml:"solution_raw" yaml:"solution_raw"`
+	ID          int    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name        string `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Description string `boil:"description" json:"description" toml:"description" yaml:"description"`
+	SolutionRaw string `boil:"solution_raw" json:"solution_raw" toml:"solution_raw" yaml:"solution_raw"`
 
 	R *problemR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L problemL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -62,12 +61,12 @@ var ProblemTableColumns = struct {
 var ProblemWhere = struct {
 	ID          whereHelperint
 	Name        whereHelperstring
-	Description whereHelpernull_String
+	Description whereHelperstring
 	SolutionRaw whereHelperstring
 }{
 	ID:          whereHelperint{field: "\"problems\".\"id\""},
 	Name:        whereHelperstring{field: "\"problems\".\"name\""},
-	Description: whereHelpernull_String{field: "\"problems\".\"description\""},
+	Description: whereHelperstring{field: "\"problems\".\"description\""},
 	SolutionRaw: whereHelperstring{field: "\"problems\".\"solution_raw\""},
 }
 
@@ -110,8 +109,8 @@ type problemL struct{}
 
 var (
 	problemAllColumns            = []string{"id", "name", "description", "solution_raw"}
-	problemColumnsWithoutDefault = []string{"name", "solution_raw"}
-	problemColumnsWithDefault    = []string{"id", "description"}
+	problemColumnsWithoutDefault = []string{"name", "description", "solution_raw"}
+	problemColumnsWithDefault    = []string{"id"}
 	problemPrimaryKeyColumns     = []string{"id"}
 	problemGeneratedColumns      = []string{}
 )

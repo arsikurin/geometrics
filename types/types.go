@@ -16,6 +16,7 @@ const (
 	OK      ProblemResult = iota
 	WA      ProblemResult = iota
 	Invalid ProblemResult = iota
+	Error   ProblemResult = iota
 )
 
 func (pr ProblemResult) String() string {
@@ -25,7 +26,9 @@ func (pr ProblemResult) String() string {
 	case WA:
 		return "Wrong answer"
 	case Invalid:
-		return "Not allowed to use this"
+		return "Forbidden"
+	case Error:
+		return "Error occurred"
 	default:
 		return "unknown"
 	}

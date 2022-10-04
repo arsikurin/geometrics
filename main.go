@@ -113,8 +113,6 @@ func main() {
 	{
 		utils.UseAuth(restricted)
 
-		restricted.File("test", "public/test.html")
-
 		restricted.GET("/profiles", profilesHandlers.GETProfile)
 		restricted.GET("/profiles/:id", profilesHandlers.GETProfileByID(ctx))
 

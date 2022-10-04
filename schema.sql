@@ -26,7 +26,7 @@ create table problems
 (
     id           serial not null,
     name         text   not null,
-    description  text,
+    description  text   not null,
     solution_raw text   not null,
     primary key (id)
 );
