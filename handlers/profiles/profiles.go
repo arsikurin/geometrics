@@ -23,10 +23,7 @@ func GETProfileByID(ctx context.Context) echo.HandlerFunc {
 			return echo.ErrNotFound
 		}
 
-		claims := c.Get("user").(*jwt.Token).Claims.(*auth.JWTCustomClaims)
-		name := claims.Name
-
-		if isExists, err := models.Users(Where("id=?", claims.UserID)).ExistsG(ctx); !isExists {
+		if isExists, err := models.Users(Where("id=?", id)).ExistsG(ctx); !isExists {
 			if err != nil {
 				return errors.WithMessage(err, "check whether user exists failed in get profile by id")
 			}
@@ -41,12 +38,15 @@ func GETProfileByID(ctx context.Context) echo.HandlerFunc {
 			})
 		}
 
-		user, err := models.Users(Where("id=?", claims.UserID)).OneG(ctx)
+		user, err := models.Users(Where("id=?", id)).OneG(ctx)
 		if err != nil {
 			return errors.WithMessage(err, "get user from the db failed in get profile by id")
 		}
 
-		return c.String(http.StatusOK, fmt.Sprintf("profile %d %s %d %v %v %s %s", id, name, user.Type, user.Grade, user.School, user.CreatedAt, user.Timezone))
+		return c.Render(http.StatusOK, "profile.html", map[string]interface{}{
+			"name": fmt.Sprintf("%s %s", user.FirstName, user.LastName),
+			"user": user,
+		})
 	}
 }
 

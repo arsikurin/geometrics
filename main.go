@@ -19,7 +19,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	_ "github.com/lib/pq"
-	"github.com/rs/zerolog"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 
 	adminHandlers "geometrics/handlers/admin"
@@ -46,7 +45,6 @@ func main() {
 	e.Logger.SetHeader(`{"level":"${level}","time":"${time_rfc3339}","prefix":"${prefix}","file":"${short_file}","line":"${line}"}`)
 
 	ctx := context.Background()
-	logger := zerolog.New(os.Stdout)
 
 	if e.Debug {
 		err := godotenv.Load(".env.development.local")
@@ -86,40 +84,20 @@ func main() {
 		AllowOrigins: []string{"*"},
 		AllowMethods: []string{http.MethodGet, http.MethodPost},
 	}))
-	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
-		LogURI:    true,
-		LogStatus: true,
-		LogMethod: true,
-		LogError:  true,
-		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
-			logger.Info().
-				Str("URI", v.URI).
-				Int("status", v.Status).
-				Str("method", v.Method).
-				Time("time", v.StartTime).
-				Err(v.Error).
-				Msg("request")
+	e.Use(utils.LoggerMiddleware())
 
-			return nil
-		},
-	}))
+	// Handlers
+	e.File("", "public/index.html")
 
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Accessible")
-	})
 	e.File("/login", "public/login.html")
 
-	restricted := e.Group("")
-	{
-		utils.UseAuth(restricted)
+	e.GET("/profiles", profilesHandlers.GETProfile, utils.AuthMiddleware(false))
+	e.GET("/profiles/:id", profilesHandlers.GETProfileByID(ctx))
 
-		restricted.GET("/profiles", profilesHandlers.GETProfile)
-		restricted.GET("/profiles/:id", profilesHandlers.GETProfileByID(ctx))
+	e.GET("/problems/:id", problemsHandlers.GETProblemByID(ctx), utils.AuthMiddleware(true))
+	e.GET("/problems/:id/submits", problemsHandlers.GETSubmitsByID(ctx))
 
-		restricted.GET("/problems/:id", problemsHandlers.GETProblemByID(ctx))
-
-		restricted.GET("/courses/:id", coursesHandlers.GETCourseByID(ctx))
-	}
+	e.GET("/courses/:id", coursesHandlers.GETCourseByID(ctx))
 
 	// API group
 	apiG := e.Group("/api/v1")
@@ -130,7 +108,7 @@ func main() {
 		// Problems group
 		problems := apiG.Group("/problems")
 		{
-			utils.UseAuth(problems)
+			problems.Use(utils.AuthMiddleware(false))
 
 			problems.GET("/:id", APIHandlers.GETProblemByID)
 			problems.POST("/:id", APIHandlers.POSTProblemByID)
@@ -142,7 +120,7 @@ func main() {
 	// Admin group
 	admin := e.Group("/admin")
 	{
-		utils.UseAuth(admin)
+		admin.Use(utils.AuthMiddleware(false))
 
 		admin.GET("", adminHandlers.Admin)
 	}

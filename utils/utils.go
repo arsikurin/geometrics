@@ -1,30 +1,84 @@
 package utils
 
 import (
+	"crypto/rsa"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
+	"time"
 
+	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/rs/zerolog"
 
 	"geometrics/auth"
 	"geometrics/types"
 )
 
-func UseAuth(group *echo.Group) {
-	key, err := auth.GetRSAPublicKey()
-	if err != nil {
-		log.Println(err)
+func AuthMiddleware(AllowNoToken bool) echo.MiddlewareFunc {
+	ErrorHandlerWithContext := func(err error, c echo.Context) error { return err }
+	if AllowNoToken {
+		ErrorHandlerWithContext = func(err error, c echo.Context) error {
+			if _, ok := err.(*echo.HTTPError); ok {
+				c.Set("user", &jwt.Token{
+					Method: jwt.SigningMethodRS256,
+					Claims: &auth.JWTCustomClaims{
+						UserID:  -1,
+						Name:    "Unauthorized",
+						IsAdmin: false,
+						StandardClaims: jwt.StandardClaims{
+							ExpiresAt: time.Now().Add(time.Hour * 24).Unix(), //nolint:gomnd
+						},
+					},
+				})
+
+				return nil
+			}
+
+			return err
+		}
 	}
 
-	group.Use(middleware.JWTWithConfig(middleware.JWTConfig{
-		Claims:        &auth.JWTCustomClaims{},
-		SigningKey:    key,
-		TokenLookup:   "header:Authorization,cookie:token",
-		SigningMethod: "RS256",
-	}))
+	return middleware.JWTWithConfig(middleware.JWTConfig{
+		Claims: &auth.JWTCustomClaims{},
+		SigningKey: func() *rsa.PublicKey {
+			key, err := auth.GetRSAPublicKey()
+			if err != nil {
+				log.Println(err)
+			}
+
+			return key
+		}(),
+		ContinueOnIgnoredError:  AllowNoToken,
+		ErrorHandlerWithContext: ErrorHandlerWithContext,
+		TokenLookup:             "header:Authorization,cookie:token",
+		SigningMethod:           "RS256",
+	})
+}
+
+func LoggerMiddleware() echo.MiddlewareFunc {
+	logger := zerolog.New(os.Stdout)
+
+	return middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
+		LogURI:    true,
+		LogStatus: true,
+		LogMethod: true,
+		LogError:  true,
+		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+			logger.Info().
+				Str("URI", v.URI).
+				Int("status", v.Status).
+				Str("method", v.Method).
+				Time("time", v.StartTime).
+				Err(v.Error).
+				Msg("request")
+
+			return nil
+		},
+	})
 }
 
 func CustomHTTPErrorHandler(err error, c echo.Context) {
