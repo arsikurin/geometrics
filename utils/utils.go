@@ -18,9 +18,9 @@ import (
 	"geometrics/types"
 )
 
-func AuthMiddleware(AllowNoToken bool) echo.MiddlewareFunc {
+func AuthMiddleware(allowNoToken bool) echo.MiddlewareFunc {
 	ErrorHandlerWithContext := func(err error, c echo.Context) error { return err }
-	if AllowNoToken {
+	if allowNoToken {
 		ErrorHandlerWithContext = func(err error, c echo.Context) error {
 			if _, ok := err.(*echo.HTTPError); ok {
 				c.Set("user", &jwt.Token{
@@ -52,7 +52,7 @@ func AuthMiddleware(AllowNoToken bool) echo.MiddlewareFunc {
 
 			return key
 		}(),
-		ContinueOnIgnoredError:  AllowNoToken,
+		ContinueOnIgnoredError:  allowNoToken,
 		ErrorHandlerWithContext: ErrorHandlerWithContext,
 		TokenLookup:             "header:Authorization,cookie:token",
 		SigningMethod:           "RS256",
@@ -86,12 +86,15 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 	title := fmt.Sprintf("%d Internal Server Error", code)
 
 	var detail []types.APIError
+	var detail2 string
+
 	if he, ok := err.(*echo.HTTPError); ok {
 		if detail, ok = he.Message.([]types.APIError); ok {
 			code = he.Code
 			title = fmt.Sprintf("%d Validation Failed", code)
 		} else if message, ok := he.Message.(string); ok && message == "missing or malformed jwt" {
 			code = http.StatusForbidden
+			detail2 = "Consider logging in"
 			title = fmt.Sprintf("%d %s", code, http.StatusText(code))
 		} else {
 			code = he.Code
@@ -110,8 +113,8 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 		}
 	} else {
 		if err := c.Render(code, "error.html", map[string]interface{}{
-			"error": title,
-			// "detail": detail,
+			"error":  title,
+			"detail": detail2,
 		}); err != nil {
 			c.Logger().Error(err)
 		}

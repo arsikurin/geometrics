@@ -54,5 +54,9 @@ func GETProfile(c echo.Context) error {
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(*auth.JWTCustomClaims)
 
-	return c.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("/profiles/%d", claims.UserID))
+	if claims.UserID != -1 {
+		return c.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("/profiles/%d", claims.UserID))
+	}
+
+	return c.Redirect(http.StatusPermanentRedirect, "/login")
 }

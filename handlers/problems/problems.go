@@ -53,7 +53,7 @@ func GETProblemByID(ctx context.Context) echo.HandlerFunc {
 				models.SubmitWhere.UserID.EQ(claims.UserID),
 				models.SubmitWhere.ProblemID.EQ(problem.ID),
 				OrderBy(models.SubmitColumns.ID),
-				Limit(20),
+				Limit(20), //nolint:gomnd
 			).AllG(ctx)
 			if err != nil {
 				return errors.WithMessage(err, "get submits failed in get problem by id")
@@ -99,7 +99,7 @@ func GETSubmitsByID(ctx context.Context) echo.HandlerFunc {
 			Select(models.SubmitColumns.ID, models.SubmitColumns.Status, models.SubmitColumns.CreatedAt),
 			models.SubmitWhere.ProblemID.EQ(problem.ID),
 			OrderBy(models.SubmitColumns.ID),
-			Limit(20),
+			Limit(20), //nolint:gomnd
 		).AllG(ctx)
 		if err != nil {
 			return errors.WithMessage(err, "get submits failed in get problem by id")

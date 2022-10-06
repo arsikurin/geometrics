@@ -91,7 +91,7 @@ func main() {
 
 	e.File("/login", "public/login.html")
 
-	e.GET("/profiles", profilesHandlers.GETProfile, utils.AuthMiddleware(false))
+	e.GET("/profiles", profilesHandlers.GETProfile, utils.AuthMiddleware(true))
 	e.GET("/profiles/:id", profilesHandlers.GETProfileByID(ctx))
 
 	e.GET("/problems/:id", problemsHandlers.GETProblemByID(ctx), utils.AuthMiddleware(true))
@@ -111,7 +111,7 @@ func main() {
 			problems.Use(utils.AuthMiddleware(false))
 
 			problems.GET("/:id", APIHandlers.GETProblemByID)
-			problems.POST("/:id", APIHandlers.POSTProblemByID)
+			problems.POST("/:id", APIHandlers.POSTProblemByID(ctx))
 			problems.PUT("/:id", APIHandlers.PUTProblemByID)
 			problems.DELETE("/:id", APIHandlers.DELETEProblemByID)
 		}
