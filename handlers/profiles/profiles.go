@@ -28,14 +28,7 @@ func GETProfileByID(ctx context.Context) echo.HandlerFunc {
 				return errors.WithMessage(err, "check whether user exists failed in get profile by id")
 			}
 
-			return c.JSON(http.StatusUnauthorized, echo.Map{
-				"code":   http.StatusUnauthorized,
-				"status": "error",
-				"message": fmt.Sprintf(
-					"%d %s", http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized),
-				),
-				"detail": "user not exists",
-			})
+			return echo.ErrNotFound
 		}
 
 		user, err := models.Users(Where("id=?", id)).OneG(ctx)
@@ -43,7 +36,7 @@ func GETProfileByID(ctx context.Context) echo.HandlerFunc {
 			return errors.WithMessage(err, "get user from the db failed in get profile by id")
 		}
 
-		return c.Render(http.StatusOK, "profile.html", map[string]interface{}{
+		return c.Render(http.StatusOK, "profile.gohtml", map[string]interface{}{
 			"name": fmt.Sprintf("%s %s", user.FirstName, user.LastName),
 			"user": user,
 		})

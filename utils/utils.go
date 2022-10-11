@@ -89,16 +89,16 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 	var detail interface{}
 	var JWTValidationError *jwt.ValidationError
 
-	if he, ok := err.(*echo.HTTPError); ok {
-		if detail, ok = he.Message.([]types.APIError); ok {
-			code = he.Code
+	if HTTPErr, ok := err.(*echo.HTTPError); ok {
+		if detail, ok = HTTPErr.Message.([]types.APIError); ok {
+			code = HTTPErr.Code
 			title = fmt.Sprintf("%d Validation Failed", code)
-		} else if message, ok := he.Message.(string); ok && message == "missing or malformed jwt" {
+		} else if message, ok := HTTPErr.Message.(string); ok && message == "missing or malformed jwt" {
 			code = http.StatusForbidden
 			detail = "Consider logging in"
 			title = fmt.Sprintf("%d %s", code, http.StatusText(code))
 		} else {
-			code = he.Code
+			code = HTTPErr.Code
 			title = fmt.Sprintf("%d %s", code, http.StatusText(code))
 		}
 	} else if errors.As(err, &JWTValidationError) {
@@ -117,7 +117,7 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 			c.Logger().Error(err)
 		}
 	} else {
-		if err := c.Render(code, "error.html", map[string]interface{}{
+		if err := c.Render(code, "error.gohtml", map[string]interface{}{
 			"error":  title,
 			"detail": detail,
 		}); err != nil {

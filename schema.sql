@@ -1,70 +1,73 @@
 -- schema.sql
 
-drop table if exists courses_problems;
-drop table if exists courses;
-drop table if exists submits;
-drop table if exists problems;
-drop table if exists users;
+DROP TABLE IF EXISTS courses_problems;
+DROP TABLE IF EXISTS courses;
+DROP TABLE IF EXISTS submits;
+DROP TABLE IF EXISTS problems;
+DROP TABLE IF EXISTS users;
 
-create table users
+CREATE DOMAIN PROBLEM_RESULT AS INT NOT NULL;
+
+CREATE TABLE users
 (
-    id          serial       not null,
-    login       text         not null,
-    password    text         not null,
-    type        int          not null default 0,
-    first_name  varchar(100) not null,
-    last_name   varchar(100) not null,
-    grade       int,
-    school      varchar(100),
-    created_at  timestamp    not null default NOW(),
-    last_online timestamp    not null,
-    timezone    text         not null default 'Europe/Moscow',
-    primary key (id)
+    id          SERIAL       NOT NULL,
+    login       TEXT         NOT NULL,
+    password    TEXT         NOT NULL,
+    type        INT          NOT NULL DEFAULT 0,
+    first_name  VARCHAR(100) NOT NULL,
+    last_name   VARCHAR(100) NOT NULL,
+    grade       INT,
+    school      VARCHAR(100),
+    created_at  timestamp    NOT NULL DEFAULT NOW(),
+    last_online timestamp    NOT NULL,
+    timezone    TEXT         NOT NULL DEFAULT 'Europe/Moscow',
+    PRIMARY KEY (id)
 );
 
-create table problems
+CREATE TABLE problems
 (
-    id           serial not null,
-    name         text   not null,
-    description  text   not null,
-    solution_raw text   not null,
-    primary key (id)
+    id           SERIAL NOT NULL,
+    name         TEXT   NOT NULL,
+    description  TEXT   NOT NULL,
+    solution_raw TEXT   NOT NULL,
+    toolbar      TEXT   NOT NULL DEFAULT '0 62 | 1 | 2 15 18 | 53 | 40 41 42 , 27 28 6',
+    PRIMARY KEY (id)
 );
 
-create table submits
+CREATE TABLE submits
 (
-    id           serial    not null,
-    user_id      int       not null,
-    problem_id   int       not null,
-    status       int       not null,
-    solution_raw text      not null,
-    created_at   timestamp not null default NOW(),
-    primary key (id),
-    foreign key (problem_id) references problems (id),
-    foreign key (user_id) references users (id)
-
-);
-
-create table courses
-(
-    id          serial not null,
-    author_id   int    not null,
-    name        text   not null,
-    description text,
-    primary key (id),
-    foreign key (author_id) references users (id)
+    id           SERIAL         NOT NULL,
+    user_id      INT            NOT NULL,
+    problem_id   INT            NOT NULL,
+    status       PROBLEM_RESULT NOT NULL,
+    solution_raw TEXT           NOT NULL,
+    created_at   timestamp      NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (id),
+    FOREIGN KEY (problem_id) REFERENCES problems (id),
+    FOREIGN KEY (user_id) REFERENCES users (id)
 
 );
 
-create table courses_problems
+create TABLE courses
 (
-    id         serial not null,
-    course_id  int    not null,
-    problem_id int    not null,
-    primary key (id),
-    foreign key (course_id) references courses (id),
-    foreign key (problem_id) references problems (id),
-    unique (course_id, problem_id)
+    id          SERIAL NOT NULL,
+    author_id   INT    NOT NULL,
+    name        TEXT   NOT NULL,
+    description TEXT,
+    PRIMARY KEY (id),
+    FOREIGN KEY (author_id) REFERENCES users (id)
+
+);
+
+CREATE TABLE courses_problems
+(
+    id         SERIAL NOT NULL,
+    course_id  INT    NOT NULL,
+    problem_id INT    NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (course_id) REFERENCES courses (id),
+    FOREIGN KEY (problem_id) REFERENCES problems (id),
+    UNIQUE (course_id, problem_id)
 );
 
 

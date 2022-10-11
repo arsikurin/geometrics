@@ -1,6 +1,6 @@
 //go:generate sqlboiler psql -c sqlboiler.toml
 // ssh-keygen -t rsa -m PEM
-// ssh-keygen -f id_rsa.pub -e -m pkcs8 > id_rsa.pub.pkcs8
+// ssh-keygen -f id.rsa.pub -e -m pkcs8 > id.rsa.pub.pkcs8
 
 package main
 
@@ -70,7 +70,11 @@ func main() {
 	}(db)
 
 	e.HideBanner = true
-	e.Renderer = &types.Template{Templates: template.Must(template.ParseGlob("public/*.html"))}
+	e.Renderer = &types.Template{Templates: template.Must(template.New("").Funcs(
+		template.FuncMap{
+			"statusStringify": func(status int) string { return types.ProblemResult(status).String() },
+		},
+	).ParseGlob("public/*.gohtml"))}
 	e.Validator = &types.CustomValidator{Validator: validator.New()}
 	e.HTTPErrorHandler = utils.CustomHTTPErrorHandler
 	e.Static("/static", "public/static")
@@ -96,6 +100,7 @@ func main() {
 
 	e.GET("/problems/:id", problemsHandlers.GETProblemByID(ctx), utils.AuthMiddleware(true))
 	e.GET("/problems/:id/submits", problemsHandlers.GETSubmitsByID(ctx))
+	e.GET("/problems/:id/solve", problemsHandlers.GETSolveByID(ctx))
 
 	e.GET("/courses/:id", coursesHandlers.GETCourseByID(ctx))
 

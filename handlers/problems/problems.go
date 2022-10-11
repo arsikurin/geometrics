@@ -30,11 +30,6 @@ func GETProblemByID(ctx context.Context) echo.HandlerFunc {
 			return echo.ErrNotFound
 		}
 
-		action := c.QueryParam("action")
-		if action == "" {
-			action = "view"
-		}
-
 		problem, err := models.Problems(
 			Select(models.ProblemTableColumns.ID, models.ProblemColumns.Name, models.ProblemColumns.Description),
 			models.ProblemWhere.ID.EQ(id),
@@ -65,7 +60,7 @@ func GETProblemByID(ctx context.Context) echo.HandlerFunc {
 			}
 		}
 
-		return c.Render(http.StatusOK, "problem.html", map[string]interface{}{
+		return c.Render(http.StatusOK, "problem.gohtml", map[string]interface{}{
 			"submits": submits,
 			"problem": problem,
 		})
@@ -105,13 +100,37 @@ func GETSubmitsByID(ctx context.Context) echo.HandlerFunc {
 			return errors.WithMessage(err, "get submits failed in get problem by id")
 		}
 
-		for _, submit := range submits {
-			submit.StatusS = types.ProblemResult(submit.Status).String()
-			submit.CreatedAtS = submit.CreatedAt.Format("15:04:05 02/01/2006")
+		return c.Render(http.StatusOK, "problem.gohtml", map[string]interface{}{
+			"submits": submits,
+			"problem": problem,
+		})
+	}
+}
+
+func GETSolveByID(ctx context.Context) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			return echo.ErrNotFound
 		}
 
-		return c.Render(http.StatusOK, "problem.html", map[string]interface{}{
-			"submits": submits,
+		if isExists, err := models.Problems(Where("id=?", id)).ExistsG(ctx); !isExists {
+			if err != nil {
+				return errors.WithMessage(err, "check whether user exists failed in get problem by id")
+			}
+
+			return echo.ErrNotFound
+		}
+
+		problem, err := models.Problems(
+			Select(models.ProblemTableColumns.ID, models.ProblemColumns.Name, models.ProblemColumns.Description),
+			models.ProblemWhere.ID.EQ(id),
+		).OneG(ctx)
+		if err != nil {
+			return errors.WithMessage(err, "get problem failed in get problem by id")
+		}
+
+		return c.Render(http.StatusOK, "solve.gohtml", map[string]interface{}{
 			"problem": problem,
 		})
 	}

@@ -23,12 +23,7 @@ import (
 func GETProblemByID(c echo.Context) error {
 	id := c.Param("id")
 
-	action := c.QueryParam("action")
-	if action == "" {
-		action = "view"
-	}
-
-	return c.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("/problems/%s?action=%s", id, action))
+	return c.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("/problems/%s", id))
 }
 func POSTProblemByID(ctx context.Context) echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -94,7 +89,13 @@ func PUTProblemByID(ctx context.Context) echo.HandlerFunc {
 			return err
 		}
 
-		problem, err := models.Problems(SQL("INSERT INTO problems (name, description, solution_raw) VALUES ($1, $2, $3) RETURNING id", ppr.Name, ppr.Description, ppr.SolutionBase64)).OneG(ctx)
+		problem := models.Problem{
+			Name:        ppr.Name,
+			Description: ppr.Description,
+			SolutionRaw: ppr.SolutionBase64,
+		}
+
+		err := problem.InsertG(ctx, boil.Infer())
 		if err != nil {
 			return errors.WithMessage(err, "insert problem failed in put problem by id")
 		}

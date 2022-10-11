@@ -27,6 +27,7 @@ type Problem struct {
 	Name        string `boil:"name" json:"name" toml:"name" yaml:"name"`
 	Description string `boil:"description" json:"description" toml:"description" yaml:"description"`
 	SolutionRaw string `boil:"solution_raw" json:"solution_raw" toml:"solution_raw" yaml:"solution_raw"`
+	Toolbar     string `boil:"toolbar" json:"toolbar" toml:"toolbar" yaml:"toolbar"`
 
 	R *problemR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L problemL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -37,11 +38,13 @@ var ProblemColumns = struct {
 	Name        string
 	Description string
 	SolutionRaw string
+	Toolbar     string
 }{
 	ID:          "id",
 	Name:        "name",
 	Description: "description",
 	SolutionRaw: "solution_raw",
+	Toolbar:     "toolbar",
 }
 
 var ProblemTableColumns = struct {
@@ -49,11 +52,13 @@ var ProblemTableColumns = struct {
 	Name        string
 	Description string
 	SolutionRaw string
+	Toolbar     string
 }{
 	ID:          "problems.id",
 	Name:        "problems.name",
 	Description: "problems.description",
 	SolutionRaw: "problems.solution_raw",
+	Toolbar:     "problems.toolbar",
 }
 
 // Generated where
@@ -63,11 +68,13 @@ var ProblemWhere = struct {
 	Name        whereHelperstring
 	Description whereHelperstring
 	SolutionRaw whereHelperstring
+	Toolbar     whereHelperstring
 }{
 	ID:          whereHelperint{field: "\"problems\".\"id\""},
 	Name:        whereHelperstring{field: "\"problems\".\"name\""},
 	Description: whereHelperstring{field: "\"problems\".\"description\""},
 	SolutionRaw: whereHelperstring{field: "\"problems\".\"solution_raw\""},
+	Toolbar:     whereHelperstring{field: "\"problems\".\"toolbar\""},
 }
 
 // ProblemRels is where relationship names are stored.
@@ -108,9 +115,9 @@ func (r *problemR) GetSubmits() SubmitSlice {
 type problemL struct{}
 
 var (
-	problemAllColumns            = []string{"id", "name", "description", "solution_raw"}
+	problemAllColumns            = []string{"id", "name", "description", "solution_raw", "toolbar"}
 	problemColumnsWithoutDefault = []string{"name", "description", "solution_raw"}
-	problemColumnsWithDefault    = []string{"id"}
+	problemColumnsWithDefault    = []string{"id", "toolbar"}
 	problemPrimaryKeyColumns     = []string{"id"}
 	problemGeneratedColumns      = []string{}
 )

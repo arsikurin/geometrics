@@ -6,14 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geometrics</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="icon" href="static/images/icons/icon.svg">
+    <link rel="icon" href="static/images/icon.svg">
 </head>
 <body>
 
 <nav class="bg-gray-300 border-gray-200 px-2 sm:px-4 py-2.5">
     <div class="container flex flex-wrap justify-between items-center mx-auto">
         <a href="#" class="flex items-center">
-            <img src="static/images/icons/icon.svg" class="mr-3 h-6 sm:h-9" alt="Geometrics Logo">
+            <img src="static/images/icon.svg" class="mr-3 h-6 sm:h-9" alt="Geometrics Logo">
             <span class="self-center text-xl font-semibold whitespace-nowrap">Geometrics</span>
         </a>
         <div class="hidden w-full md:block md:w-auto" id="navbar-default">
@@ -21,7 +21,7 @@
                 <li>
                     <a href="#"
                        class="py-2 pr-4 pl-3 text-gray-700 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 "><img
-                            class="inline" src="static/images/icons/user.svg" alt="User Picture" width="25"> Профиль</a>
+                                class="inline" src="static/images/user.svg" alt="User Picture" width="25"> Профиль</a>
                 </li>
             </ul>
         </div>
@@ -43,7 +43,7 @@
     <div class="submits">
         <p class="text-lg mb-2">Ваши посылки по задаче <a href="/problems/{{.problem.ID}}/submits"
                                                           class="text-base hover:underline text-gray-400 hover:text-gray-900">все
-            посылки</a></p>
+                посылки</a></p>
         <table class="w-full text-center table-auto">
             <thead class="text-xs text-gray-700 uppercase bg-gray-50">
             <tr>
@@ -55,13 +55,13 @@
             </thead>
             <tbody>
             {{ range .submits }}
-            <tr>
-                <td class="py-3">{{ .ID }}</td>
-                <td>{{ .StatusS }}</td>
-                <td>{{ .CreatedAtS }}</td>
-                <td><a href="/submits/{{ .ID }}" class="bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded">Посмотреть</a>
-                </td>
-            </tr>
+                <tr>
+                    <td class="py-3">{{ .ID }}</td>
+                    <td>{{ statusStringify .Status }}</td>
+                    <td>{{ .CreatedAt.Format "15:04:05 02/01/2006" }}</td>
+                    <td><a href="/submits/{{ .ID }}" class="bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded">Посмотреть</a>
+                    </td>
+                </tr>
             {{ end }}
             </tbody>
         </table>

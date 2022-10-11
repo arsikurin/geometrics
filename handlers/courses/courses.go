@@ -54,7 +54,7 @@ func GETCourseByID(ctx context.Context) echo.HandlerFunc {
 			return errors.WithMessage(err, "get author failed in get course by id")
 		}
 
-		return c.Render(http.StatusOK, "course.html", map[string]interface{}{
+		return c.Render(http.StatusOK, "course.gohtml", map[string]interface{}{
 			"author":   fmt.Sprintf("%s %s", author.FirstName, author.LastName),
 			"course":   course,
 			"problems": courseProblems,
