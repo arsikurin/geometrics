@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/friendsofgo/errors"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -85,8 +86,8 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 	code := http.StatusInternalServerError
 	title := fmt.Sprintf("%d Internal Server Error", code)
 
-	var detail []types.APIError
-	var detail2 string
+	var detail interface{}
+	var JWTValidationError *jwt.ValidationError
 
 	if he, ok := err.(*echo.HTTPError); ok {
 		if detail, ok = he.Message.([]types.APIError); ok {
@@ -94,12 +95,16 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 			title = fmt.Sprintf("%d Validation Failed", code)
 		} else if message, ok := he.Message.(string); ok && message == "missing or malformed jwt" {
 			code = http.StatusForbidden
-			detail2 = "Consider logging in"
+			detail = "Consider logging in"
 			title = fmt.Sprintf("%d %s", code, http.StatusText(code))
 		} else {
 			code = he.Code
 			title = fmt.Sprintf("%d %s", code, http.StatusText(code))
 		}
+	} else if errors.As(err, &JWTValidationError) {
+		code = http.StatusForbidden
+		title = fmt.Sprintf("%d %s", code, http.StatusText(code))
+		detail = err.Error()
 	}
 
 	if strings.Split(c.Path(), "/")[1] == "api" {
@@ -114,7 +119,7 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 	} else {
 		if err := c.Render(code, "error.html", map[string]interface{}{
 			"error":  title,
-			"detail": detail2,
+			"detail": detail,
 		}); err != nil {
 			c.Logger().Error(err)
 		}

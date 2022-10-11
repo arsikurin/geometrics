@@ -37,17 +37,17 @@ func POSTProblemByID(ctx context.Context) echo.HandlerFunc {
 			return echo.ErrNotFound
 		}
 
-		pcr := new(types.ProblemCheckReq)
-		if err := c.Bind(pcr); err != nil {
+		ppr := new(types.POSTProblemReq)
+		if err := c.Bind(ppr); err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
-		if err := c.Validate(pcr); err != nil {
+		if err := c.Validate(ppr); err != nil {
 			return err
 		}
 
 		var out, scriptErr bytes.Buffer
 
-		cmd := exec.Command("/usr/local/bin/python", "main.py", strconv.Itoa(id), pcr.GgbBase64)
+		cmd := exec.Command("/usr/local/bin/python", "main.py", strconv.Itoa(id), ppr.GgbBase64)
 		cmd.Stdout = &out
 		cmd.Stderr = &scriptErr
 
@@ -69,7 +69,7 @@ func POSTProblemByID(ctx context.Context) echo.HandlerFunc {
 			newSubmit.UserID = claims.UserID
 			newSubmit.ProblemID = id
 			newSubmit.Status = res
-			newSubmit.SolutionRaw = pcr.GgbBase64
+			newSubmit.SolutionRaw = ppr.GgbBase64
 
 			err = newSubmit.InsertG(ctx, boil.Infer())
 			if err != nil {
@@ -84,13 +84,66 @@ func POSTProblemByID(ctx context.Context) echo.HandlerFunc {
 		})
 	}
 }
-func PUTProblemByID(c echo.Context) error {
-	id := c.Param("id")
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(*auth.JWTCustomClaims)
-	name := claims.Name
+func PUTProblemByID(ctx context.Context) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		ppr := new(types.PUTProblemReq)
+		if err := c.Bind(ppr); err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
+		if err := c.Validate(ppr); err != nil {
+			return err
+		}
 
-	return c.String(http.StatusOK, "method PUT "+id+" "+name)
+		problem, err := models.Problems(SQL("INSERT INTO problems (name, description, solution_raw) VALUES ($1, $2, $3) RETURNING id", ppr.Name, ppr.Description, ppr.SolutionBase64)).OneG(ctx)
+		if err != nil {
+			return errors.WithMessage(err, "insert problem failed in put problem by id")
+		}
+
+		return c.JSON(http.StatusOK, echo.Map{
+			"code":       http.StatusOK,
+			"status":     "ok",
+			"problem_id": problem.ID,
+		})
+	}
+}
+func PATCHProblemByID(ctx context.Context) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			return echo.ErrNotFound
+		}
+
+		if isExists, err := models.Problems(Where("id=?", id)).ExistsG(ctx); !isExists {
+			if err != nil {
+				return errors.WithMessage(err, "check whether problem exists failed in patch problem by id")
+			}
+
+			return echo.ErrNotFound
+		}
+
+		ppr := new(types.PATCHProblemReq)
+		if err := c.Bind(ppr); err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
+		if err := c.Validate(ppr); err != nil {
+			return err
+		}
+
+		problem, err := models.FindProblemG(ctx, id)
+		problem.Name = ppr.Name
+		problem.Description = ppr.Description
+		problem.SolutionRaw = ppr.SolutionBase64
+
+		_, err = problem.UpdateG(ctx, boil.Infer())
+		if err != nil {
+			return errors.WithMessage(err, "update problem failed in patch problem by id")
+		}
+
+		return c.JSON(http.StatusOK, echo.Map{
+			"code":   http.StatusOK,
+			"status": "ok",
+		})
+	}
 }
 func DELETEProblemByID(c echo.Context) error {
 	id := c.Param("id")
@@ -103,7 +156,7 @@ func DELETEProblemByID(c echo.Context) error {
 
 func Login(ctx context.Context) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		lcr := new(types.LoginCredsReq)
+		lcr := new(types.LoginReq)
 		if err := c.Bind(lcr); err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}

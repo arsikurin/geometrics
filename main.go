@@ -108,11 +108,12 @@ func main() {
 		// Problems group
 		problems := apiG.Group("/problems")
 		{
-			problems.Use(utils.AuthMiddleware(false))
+			problems.Use(utils.AuthMiddleware(true))
 
 			problems.GET("/:id", APIHandlers.GETProblemByID)
 			problems.POST("/:id", APIHandlers.POSTProblemByID(ctx))
-			problems.PUT("/:id", APIHandlers.PUTProblemByID)
+			problems.PUT("", APIHandlers.PUTProblemByID(ctx))
+			problems.PATCH("/:id", APIHandlers.PATCHProblemByID(ctx))
 			problems.DELETE("/:id", APIHandlers.DELETEProblemByID)
 		}
 	}

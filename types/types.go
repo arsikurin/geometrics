@@ -64,13 +64,25 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, _ echo.Con
 }
 
 type (
-	LoginCredsReq struct {
-		Login    string `json:"login" validate:"required,email"`
-		Password string `json:"password" validate:"required,gte=8,lte=30"`
+	POSTProblemReq struct {
+		GgbBase64 string `json:"ggb_base64" validate:"required,base64"` //nolint:tagliatelle
 	}
 
-	ProblemCheckReq struct {
-		GgbBase64 string `json:"ggb_base64" validate:"required,base64"` //nolint:tagliatelle
+	PUTProblemReq struct {
+		Name           string `json:"name" validate:"required"`
+		Description    string `json:"description" validate:"required"`
+		SolutionBase64 string `json:"solution_base64" validate:"required"` // ",base64"`
+	}
+
+	PATCHProblemReq struct {
+		Name           string `json:"name,omitempty"`
+		Description    string `json:"description,omitempty"`
+		SolutionBase64 string `json:"solution_base64,omitempty" validate:"omitempty,base64"`
+	}
+
+	LoginReq struct {
+		Login    string `json:"login" validate:"required,email"`
+		Password string `json:"password" validate:"required,gte=8,lte=30"`
 	}
 
 	CustomValidator struct {
