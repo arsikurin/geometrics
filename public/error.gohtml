@@ -47,7 +47,7 @@
         }
 
         .text__fix {
-            margin-top: 135px;
+            margin-top: 150px;
             height: 30px;
             line-height: 30px;
             font-size: 1.5rem;
@@ -88,7 +88,7 @@
 <div class="text__detail">{{ .detail }}</div>
 <div class="text__fix">{{ .fix }}</div>
 <div class="text__link">
-    <a id="text__link" href="/" data-text="click here to go home"></a>
+    <a id="text__link" href="{{ .link }}" data-text="{{ .link_text }}"></a>
 </div>
 <script>
     function setCharAt(str, index, chr) {

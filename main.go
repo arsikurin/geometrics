@@ -91,7 +91,7 @@ func main() {
 	e.Use(utils.LoggerMiddleware())
 
 	// Handlers
-	e.File("", "public/index.html")
+	e.File("", "public/index.gohtml")
 
 	e.File("/login", "public/login.html")
 
@@ -100,7 +100,7 @@ func main() {
 
 	e.GET("/problems/:id", problemsHandlers.GETProblemByID(ctx), utils.AuthMiddleware(true))
 	e.GET("/problems/:id/submits", problemsHandlers.GETSubmitsByID(ctx))
-	e.GET("/problems/:id/solve", problemsHandlers.GETSolveByID(ctx))
+	e.GET("/problems/:id/solve", problemsHandlers.GETSolveByID(ctx), utils.AuthMiddleware(false))
 
 	e.GET("/courses/:id", coursesHandlers.GETCourseByID(ctx))
 

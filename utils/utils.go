@@ -88,6 +88,9 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 
 	var detail interface{}
 	var JWTValidationError *jwt.ValidationError
+	var link = "/"
+	var linkT = "click here to go home"
+	var fix string
 
 	if HTTPErr, ok := err.(*echo.HTTPError); ok {
 		if detail, ok = HTTPErr.Message.([]types.APIError); ok {
@@ -107,6 +110,12 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 		detail = err.Error()
 	}
 
+	if code == http.StatusForbidden || code == http.StatusUnauthorized {
+		link = "/login"
+		linkT = "click here to log in"
+		fix = "You have no power here"
+	}
+
 	if strings.Split(c.Path(), "/")[1] == "api" {
 		if err := c.JSON(code, map[string]interface{}{
 			"code":    code,
@@ -118,8 +127,11 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 		}
 	} else {
 		if err := c.Render(code, "error.gohtml", map[string]interface{}{
-			"error":  title,
-			"detail": detail,
+			"error":     title,
+			"detail":    detail,
+			"link":      link,
+			"link_text": linkT,
+			"fix":       fix,
 		}); err != nil {
 			c.Logger().Error(err)
 		}

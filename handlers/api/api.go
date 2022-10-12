@@ -32,6 +32,14 @@ func POSTProblemByID(ctx context.Context) echo.HandlerFunc {
 			return echo.ErrNotFound
 		}
 
+		if isExists, err := models.Problems(Where("id=?", id)).ExistsG(ctx); !isExists {
+			if err != nil {
+				return errors.WithMessage(err, "check whether problem exists failed in patch problem by id")
+			}
+
+			return echo.ErrNotFound
+		}
+
 		ppr := new(types.POSTProblemReq)
 		if err := c.Bind(ppr); err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
@@ -42,7 +50,7 @@ func POSTProblemByID(ctx context.Context) echo.HandlerFunc {
 
 		var out, scriptErr bytes.Buffer
 
-		cmd := exec.Command("/usr/local/bin/python", "main.py", strconv.Itoa(id), ppr.GgbBase64)
+		cmd := exec.Command("/usr/local/bin/python", "main.py", strconv.Itoa(id), ppr.GgbBase64) //nolint:gosec
 		cmd.Stdout = &out
 		cmd.Stderr = &scriptErr
 
@@ -57,7 +65,11 @@ func POSTProblemByID(ctx context.Context) echo.HandlerFunc {
 		}
 
 		go func() {
-			user := c.Get("user").(*jwt.Token)
+			user, ok := c.Get("user").(*jwt.Token)
+			if !ok {
+				c.Logger().Error(errors.WithMessage(err, "assert token failed in post problem by id"))
+				return
+			}
 			claims := user.Claims.(*auth.JWTCustomClaims)
 
 			var newSubmit models.Submit
