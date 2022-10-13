@@ -179,14 +179,6 @@ func DELETEProblemByID(ctx context.Context) echo.HandlerFunc {
 			return echo.ErrNotFound
 		}
 
-		ppr := new(types.PATCHProblemReq)
-		if err := c.Bind(ppr); err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-		}
-		if err := c.Validate(ppr); err != nil {
-			return err
-		}
-
 		problem, err := models.FindProblemG(ctx, id)
 		if err != nil {
 			return errors.WithMessage(err, "find problem failed in delete problem by id")

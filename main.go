@@ -113,7 +113,7 @@ func main() {
 		// Problems group
 		problems := apiG.Group("/problems")
 		{
-			problems.Use(utils.AuthMiddleware(true))
+			problems.Use(utils.AuthMiddleware(false))
 
 			problems.GET("/:id", APIHandlers.GETProblemByID)
 			problems.POST("/:id", APIHandlers.POSTProblemByID(ctx))
