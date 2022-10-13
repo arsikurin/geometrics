@@ -1,16 +1,13 @@
 package api
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"net/http"
-	"os/exec"
 	"strconv"
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	. "github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -18,13 +15,18 @@ import (
 	"geometrics/auth"
 	"geometrics/models"
 	"geometrics/types"
+	"geometrics/utils"
 )
 
 func GETProblemByID(c echo.Context) error {
-	id := c.Param("id")
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return echo.ErrNotFound
+	}
 
-	return c.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("/problems/%s", id))
+	return c.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("/problems/%d", id)) //nolint:wrapcheck
 }
+
 func POSTProblemByID(ctx context.Context) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		id, err := strconv.Atoi(c.Param("id"))
@@ -44,62 +46,35 @@ func POSTProblemByID(ctx context.Context) echo.HandlerFunc {
 		if err := c.Bind(ppr); err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
+
 		if err := c.Validate(ppr); err != nil {
-			return err
+			return errors.WithMessage(err, "validation failed in post problem by id")
 		}
 
-		var out, scriptErr bytes.Buffer
-
-		cmd := exec.Command("/usr/local/bin/python", "main.py", strconv.Itoa(id), ppr.GgbBase64) //nolint:gosec
-		cmd.Stdout = &out
-		cmd.Stderr = &scriptErr
-
-		err = cmd.Run()
+		res, err := utils.CheckProblem(strconv.Itoa(id), ppr.GgbBase64)
 		if err != nil {
-			return errors.WithMessage(err, fmt.Sprintf("python checker failed: %s", scriptErr.String()))
+			c.Logger().Error(err)
 		}
 
-		res, err := strconv.Atoi(out.String())
-		if err != nil {
-			return errors.WithMessage(err, "not int response from python checker")
-		}
+		go utils.InsertSubmit(ctx, c, id, int(res), ppr.GgbBase64)
 
-		go func() {
-			user, ok := c.Get("user").(*jwt.Token)
-			if !ok {
-				c.Logger().Error(errors.WithMessage(err, "assert token failed in post problem by id"))
-				return
-			}
-			claims := user.Claims.(*auth.JWTCustomClaims)
-
-			submit := models.Submit{
-				UserID:      claims.UserID,
-				ProblemID:   id,
-				Status:      res,
-				SolutionRaw: ppr.GgbBase64,
-			}
-
-			err = submit.InsertG(ctx, boil.Infer())
-			if err != nil {
-				c.Logger().Error(errors.WithMessage(err, "insert submit failed in post problem by id"))
-			}
-		}()
-
-		return c.JSON(http.StatusOK, echo.Map{
+		return c.JSON(http.StatusOK, echo.Map{ //nolint:wrapcheck
 			"code":   http.StatusOK,
 			"status": "ok",
 			"result": res,
 		})
 	}
 }
-func PUTProblemByID(ctx context.Context) echo.HandlerFunc {
+
+func PUTProblem(ctx context.Context) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ppr := new(types.PUTProblemReq)
 		if err := c.Bind(ppr); err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
+
 		if err := c.Validate(ppr); err != nil {
-			return err
+			return errors.WithMessage(err, "validation failed in put problem")
 		}
 
 		problem := models.Problem{
@@ -113,13 +88,14 @@ func PUTProblemByID(ctx context.Context) echo.HandlerFunc {
 			return errors.WithMessage(err, "insert problem failed in put problem by id")
 		}
 
-		return c.JSON(http.StatusOK, echo.Map{
+		return c.JSON(http.StatusOK, echo.Map{ //nolint:wrapcheck
 			"code":       http.StatusOK,
 			"status":     "ok",
 			"problem_id": problem.ID,
 		})
 	}
 }
+
 func PATCHProblemByID(ctx context.Context) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		id, err := strconv.Atoi(c.Param("id"))
@@ -139,8 +115,9 @@ func PATCHProblemByID(ctx context.Context) echo.HandlerFunc {
 		if err := c.Bind(ppr); err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
+
 		if err := c.Validate(ppr); err != nil {
-			return err
+			return errors.WithMessage(err, "validation failed in patch problem by id")
 		}
 
 		problem, err := models.FindProblemG(ctx, id)
@@ -157,13 +134,14 @@ func PATCHProblemByID(ctx context.Context) echo.HandlerFunc {
 			return errors.WithMessage(err, "update problem failed in patch problem by id")
 		}
 
-		return c.JSON(http.StatusOK, echo.Map{
+		return c.JSON(http.StatusOK, echo.Map{ //nolint:wrapcheck
 			"code":       http.StatusOK,
 			"status":     "ok",
 			"problem_id": problemID,
 		})
 	}
 }
+
 func DELETEProblemByID(ctx context.Context) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		id, err := strconv.Atoi(c.Param("id"))
@@ -189,7 +167,7 @@ func DELETEProblemByID(ctx context.Context) echo.HandlerFunc {
 			return errors.WithMessage(err, "delete problem failed in delete problem by id")
 		}
 
-		return c.JSON(http.StatusOK, echo.Map{
+		return c.JSON(http.StatusOK, echo.Map{ //nolint:wrapcheck
 			"code":       http.StatusOK,
 			"status":     "ok",
 			"problem_id": problemID,
@@ -203,8 +181,9 @@ func Login(ctx context.Context) echo.HandlerFunc {
 		if err := c.Bind(lcr); err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
+
 		if err := c.Validate(lcr); err != nil {
-			return err
+			return errors.WithMessage(err, "validation failed in login")
 		}
 
 		// username := c.FormValue("login")
@@ -214,7 +193,7 @@ func Login(ctx context.Context) echo.HandlerFunc {
 				return errors.WithMessage(err, "check whether user exists failed in login")
 			}
 
-			return c.JSON(http.StatusUnauthorized, echo.Map{
+			return c.JSON(http.StatusUnauthorized, echo.Map{ //nolint:wrapcheck
 				"code":   http.StatusUnauthorized,
 				"status": "error",
 				"message": fmt.Sprintf(
@@ -247,7 +226,7 @@ func Login(ctx context.Context) echo.HandlerFunc {
 			HttpOnly: true,
 		})
 
-		return c.JSON(http.StatusOK, echo.Map{
+		return c.JSON(http.StatusOK, echo.Map{ //nolint:wrapcheck
 			"code":   http.StatusOK,
 			"status": "ok",
 			"token":  t,

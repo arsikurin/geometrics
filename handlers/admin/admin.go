@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/friendsofgo/errors"
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 
@@ -33,8 +34,15 @@ func Admin(c echo.Context) error {
 	// if !tkn.Valid {
 	//	return c.String(http.StatusUnauthorized, "token invalid")
 	// }
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(*auth.JWTCustomClaims)
+	user, ok := c.Get("user").(*jwt.Token)
+	if !ok {
+		return errors.New("assert token failed in admin")
+	}
 
-	return c.String(http.StatusOK, "["+strconv.FormatBool(claims.IsAdmin)+"] Welcome "+claims.Name+"!")
+	claims, ok := user.Claims.(*auth.JWTCustomClaims)
+	if !ok {
+		return errors.New("assert claims failed in admin")
+	}
+
+	return c.String(http.StatusOK, "["+strconv.FormatBool(claims.IsAdmin)+"] Welcome "+claims.Name+"!") //nolint:wrapcheck
 }

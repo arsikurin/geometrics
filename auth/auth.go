@@ -34,23 +34,23 @@ func GenerateAccessToken(user *models.User) (string, error) {
 		return "", err
 	}
 
-	return token.SignedString(key)
+	return token.SignedString(key) //nolint:wrapcheck
 }
 
 func GetRSAPublicKey() (*rsa.PublicKey, error) {
 	keyData, err := os.ReadFile("./id.rsa.pub.pkcs8")
 	if err != nil {
-		return nil, err
+		return nil, err //nolint:wrapcheck
 	}
 
-	return jwt.ParseRSAPublicKeyFromPEM(keyData)
+	return jwt.ParseRSAPublicKeyFromPEM(keyData) //nolint:wrapcheck
 }
 
 func GetRSAPrivateKey() (*rsa.PrivateKey, error) {
 	keyData, err := os.ReadFile("./id.rsa")
 	if err != nil {
-		return nil, err
+		return nil, err //nolint:wrapcheck
 	}
 
-	return jwt.ParseRSAPrivateKeyFromPEM(keyData)
+	return jwt.ParseRSAPrivateKeyFromPEM(keyData) //nolint:wrapcheck
 }

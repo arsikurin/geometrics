@@ -36,7 +36,7 @@ func GETProfileByID(ctx context.Context) echo.HandlerFunc {
 			return errors.WithMessage(err, "get user from the db failed in get profile by id")
 		}
 
-		return c.Render(http.StatusOK, "profile.gohtml", map[string]interface{}{
+		return c.Render(http.StatusOK, "profile.gohtml", map[string]interface{}{ //nolint:wrapcheck
 			"name": fmt.Sprintf("%s %s", user.FirstName, user.LastName),
 			"user": user,
 		})
@@ -44,12 +44,19 @@ func GETProfileByID(ctx context.Context) echo.HandlerFunc {
 }
 
 func GETProfile(c echo.Context) error {
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(*auth.JWTCustomClaims)
-
-	if claims.UserID != -1 {
-		return c.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("/profiles/%d", claims.UserID))
+	user, ok := c.Get("user").(*jwt.Token)
+	if !ok {
+		return errors.New("assert token failed in get profile")
 	}
 
-	return c.Redirect(http.StatusPermanentRedirect, "/login")
+	claims, ok := user.Claims.(*auth.JWTCustomClaims)
+	if !ok {
+		return errors.New("assert claims failed in get profile")
+	}
+
+	if claims.UserID != -1 {
+		return c.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("/profiles/%d", claims.UserID)) //nolint:wrapcheck
+	}
+
+	return c.Redirect(http.StatusPermanentRedirect, "/login") //nolint:wrapcheck
 }

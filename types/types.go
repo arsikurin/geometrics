@@ -60,7 +60,7 @@ type Template struct {
 }
 
 func (t *Template) Render(w io.Writer, name string, data interface{}, _ echo.Context) error {
-	return t.Templates.ExecuteTemplate(w, name, data)
+	return t.Templates.ExecuteTemplate(w, name, data) //nolint:wrapcheck
 }
 
 type (
@@ -71,13 +71,13 @@ type (
 	PUTProblemReq struct {
 		Name           string `json:"name" validate:"required"`
 		Description    string `json:"description" validate:"required"`
-		SolutionBase64 string `json:"solution_base64" validate:"required"` // ",base64"`
+		SolutionBase64 string `json:"solution_base64" validate:"required,base64"` //nolint:tagliatelle
 	}
 
 	PATCHProblemReq struct {
 		Name           string `json:"name,omitempty"`
 		Description    string `json:"description,omitempty"`
-		SolutionBase64 string `json:"solution_base64,omitempty" validate:"omitempty,base64"`
+		SolutionBase64 string `json:"solution_base64,omitempty" validate:"omitempty,base64"` //nolint:tagliatelle
 	}
 
 	LoginReq struct {

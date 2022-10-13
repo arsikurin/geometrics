@@ -38,8 +38,15 @@ func GETProblemByID(ctx context.Context) echo.HandlerFunc {
 			return errors.WithMessage(err, "get problem failed in get problem by id")
 		}
 
-		user := c.Get("user").(*jwt.Token)
-		claims := user.Claims.(*auth.JWTCustomClaims)
+		user, ok := c.Get("user").(*jwt.Token)
+		if !ok {
+			return errors.New("assert token failed in get problem by id")
+		}
+
+		claims, ok := user.Claims.(*auth.JWTCustomClaims)
+		if !ok {
+			return errors.New("assert claims failed in get problem by id")
+		}
 
 		var submits models.SubmitSlice
 		if claims.UserID != -1 {
@@ -60,7 +67,7 @@ func GETProblemByID(ctx context.Context) echo.HandlerFunc {
 			}
 		}
 
-		return c.Render(http.StatusOK, "problem.gohtml", map[string]interface{}{
+		return c.Render(http.StatusOK, "problem.gohtml", map[string]interface{}{ //nolint:wrapcheck
 			"submits": submits,
 			"problem": problem,
 		})
@@ -100,7 +107,7 @@ func GETSubmitsByID(ctx context.Context) echo.HandlerFunc {
 			return errors.WithMessage(err, "get submits failed in get problem by id")
 		}
 
-		return c.Render(http.StatusOK, "problem.gohtml", map[string]interface{}{
+		return c.Render(http.StatusOK, "problem.gohtml", map[string]interface{}{ //nolint:wrapcheck
 			"submits": submits,
 			"problem": problem,
 		})
@@ -130,7 +137,7 @@ func GETSolveByID(ctx context.Context) echo.HandlerFunc {
 			return errors.WithMessage(err, "get problem failed in get problem by id")
 		}
 
-		return c.Render(http.StatusOK, "solve.gohtml", map[string]interface{}{
+		return c.Render(http.StatusOK, "solve.gohtml", map[string]interface{}{ //nolint:wrapcheck
 			"problem": problem,
 		})
 	}

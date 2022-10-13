@@ -117,7 +117,7 @@ func main() {
 
 			problems.GET("/:id", APIHandlers.GETProblemByID)
 			problems.POST("/:id", APIHandlers.POSTProblemByID(ctx))
-			problems.PUT("", APIHandlers.PUTProblemByID(ctx))
+			problems.PUT("", APIHandlers.PUTProblem(ctx))
 			problems.PATCH("/:id", APIHandlers.PATCHProblemByID(ctx))
 			problems.DELETE("/:id", APIHandlers.DELETEProblemByID(ctx))
 		}

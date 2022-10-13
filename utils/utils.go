@@ -1,11 +1,15 @@
 package utils
 
 import (
+	"bytes"
+	"context"
 	"crypto/rsa"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 
@@ -14,8 +18,10 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/rs/zerolog"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 
 	"geometrics/auth"
+	"geometrics/models"
 	"geometrics/types"
 )
 
@@ -86,11 +92,13 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 	code := http.StatusInternalServerError
 	title := fmt.Sprintf("%d Internal Server Error", code)
 
-	var detail interface{}
-	var JWTValidationError *jwt.ValidationError
-	var link = "/"
-	var linkT = "click here to go home"
-	var fix string
+	var (
+		detail             interface{}
+		JWTValidationError *jwt.ValidationError
+		link               = "/"
+		linkT              = "click here to go home"
+		fix                string
+	)
 
 	if HTTPErr, ok := err.(*echo.HTTPError); ok {
 		if detail, ok = HTTPErr.Message.([]types.APIError); ok {
@@ -138,4 +146,52 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 	}
 
 	c.Logger().Error(err)
+}
+
+func CheckProblem(id string, solution string) (types.ProblemResult, error) {
+	var out, scriptErr bytes.Buffer
+
+	cmd := exec.Command("/usr/local/bin/python", "main.py", id, solution)
+	cmd.Stdout = &out
+	cmd.Stderr = &scriptErr
+
+	err := cmd.Run()
+	if err != nil {
+		return types.Error, errors.WithMessage(err, fmt.Sprintf("python checker failed: %s", scriptErr.String()))
+	}
+
+	res, err := strconv.Atoi(out.String())
+	if err != nil {
+		return types.Error, errors.WithMessage(err, "not int response from python checker")
+	}
+
+	return types.ProblemResult(res), nil
+}
+
+func InsertSubmit(ctx context.Context, c echo.Context, id int, status int, solution string) {
+	user, ok := c.Get("user").(*jwt.Token)
+	if !ok {
+		c.Logger().Error("assert token failed in post problem by id")
+
+		return
+	}
+
+	claims, ok := user.Claims.(*auth.JWTCustomClaims)
+	if !ok {
+		c.Logger().Error("assert claims failed in post problem by id")
+
+		return
+	}
+
+	submit := models.Submit{
+		UserID:      claims.UserID,
+		ProblemID:   id,
+		Status:      status,
+		SolutionRaw: solution,
+	}
+
+	err := submit.InsertG(ctx, boil.Infer())
+	if err != nil {
+		c.Logger().Error(errors.WithMessage(err, "insert submit failed in post problem by id"))
+	}
 }
