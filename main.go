@@ -119,7 +119,7 @@ func main() {
 			problems.POST("/:id", APIHandlers.POSTProblemByID(ctx))
 			problems.PUT("", APIHandlers.PUTProblemByID(ctx))
 			problems.PATCH("/:id", APIHandlers.PATCHProblemByID(ctx))
-			problems.DELETE("/:id", APIHandlers.DELETEProblemByID)
+			problems.DELETE("/:id", APIHandlers.DELETEProblemByID(ctx))
 		}
 	}
 

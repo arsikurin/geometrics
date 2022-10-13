@@ -72,13 +72,14 @@ func POSTProblemByID(ctx context.Context) echo.HandlerFunc {
 			}
 			claims := user.Claims.(*auth.JWTCustomClaims)
 
-			var newSubmit models.Submit
-			newSubmit.UserID = claims.UserID
-			newSubmit.ProblemID = id
-			newSubmit.Status = res
-			newSubmit.SolutionRaw = ppr.GgbBase64
+			submit := models.Submit{
+				UserID:      claims.UserID,
+				ProblemID:   id,
+				Status:      res,
+				SolutionRaw: ppr.GgbBase64,
+			}
 
-			err = newSubmit.InsertG(ctx, boil.Infer())
+			err = submit.InsertG(ctx, boil.Infer())
 			if err != nil {
 				c.Logger().Error(errors.WithMessage(err, "insert submit failed in post problem by id"))
 			}
@@ -143,28 +144,65 @@ func PATCHProblemByID(ctx context.Context) echo.HandlerFunc {
 		}
 
 		problem, err := models.FindProblemG(ctx, id)
+		if err != nil {
+			return errors.WithMessage(err, "find problem failed in patch problem by id")
+		}
+
 		problem.Name = ppr.Name
 		problem.Description = ppr.Description
 		problem.SolutionRaw = ppr.SolutionBase64
 
-		_, err = problem.UpdateG(ctx, boil.Infer())
+		problemID, err := problem.UpdateG(ctx, boil.Infer())
 		if err != nil {
 			return errors.WithMessage(err, "update problem failed in patch problem by id")
 		}
 
 		return c.JSON(http.StatusOK, echo.Map{
-			"code":   http.StatusOK,
-			"status": "ok",
+			"code":       http.StatusOK,
+			"status":     "ok",
+			"problem_id": problemID,
 		})
 	}
 }
-func DELETEProblemByID(c echo.Context) error {
-	id := c.Param("id")
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(*auth.JWTCustomClaims)
-	name := claims.Name
+func DELETEProblemByID(ctx context.Context) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			return echo.ErrNotFound
+		}
 
-	return c.String(http.StatusOK, "method DELETE "+id+" "+name)
+		if isExists, err := models.Problems(Where("id=?", id)).ExistsG(ctx); !isExists {
+			if err != nil {
+				return errors.WithMessage(err, "check whether problem exists failed in delete problem by id")
+			}
+
+			return echo.ErrNotFound
+		}
+
+		ppr := new(types.PATCHProblemReq)
+		if err := c.Bind(ppr); err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
+		if err := c.Validate(ppr); err != nil {
+			return err
+		}
+
+		problem, err := models.FindProblemG(ctx, id)
+		if err != nil {
+			return errors.WithMessage(err, "find problem failed in delete problem by id")
+		}
+
+		problemID, err := problem.DeleteG(ctx)
+		if err != nil {
+			return errors.WithMessage(err, "delete problem failed in delete problem by id")
+		}
+
+		return c.JSON(http.StatusOK, echo.Map{
+			"code":       http.StatusOK,
+			"status":     "ok",
+			"problem_id": problemID,
+		})
+	}
 }
 
 func Login(ctx context.Context) echo.HandlerFunc {
