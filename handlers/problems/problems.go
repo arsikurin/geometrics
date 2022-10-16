@@ -91,12 +91,12 @@ func GETSubmitsByID(ctx context.Context) echo.HandlerFunc {
 
 		user, ok := c.Get("user").(*jwt.Token)
 		if !ok {
-			return errors.New("assert token failed in get problem by id")
+			return errors.New("assert token failed in get submits by id")
 		}
 
 		claims, ok := user.Claims.(*auth.JWTCustomClaims)
 		if !ok {
-			return errors.New("assert claims failed in get problem by id")
+			return errors.New("assert claims failed in get submits by id")
 		}
 
 		problem, err := models.Problems(
@@ -134,7 +134,7 @@ func GETSolveByID(ctx context.Context) echo.HandlerFunc {
 
 		if isExists, err := models.Problems(Where("id=?", id)).ExistsG(ctx); !isExists {
 			if err != nil {
-				return errors.WithMessage(err, "check whether user exists failed in get problem by id")
+				return errors.WithMessage(err, "check whether user exists failed in get solve by id")
 			}
 
 			return echo.ErrNotFound
@@ -145,7 +145,7 @@ func GETSolveByID(ctx context.Context) echo.HandlerFunc {
 			models.ProblemWhere.ID.EQ(id),
 		).OneG(ctx)
 		if err != nil {
-			return errors.WithMessage(err, "get problem failed in get problem by id")
+			return errors.WithMessage(err, "get problem failed in get solve by id")
 		}
 
 		return c.Render(http.StatusOK, "solve.gohtml", map[string]interface{}{ //nolint:wrapcheck

@@ -100,7 +100,7 @@ func main() {
 	e.GET("/profiles/:id", profilesHandlers.GETProfileByID(ctx))
 
 	e.GET("/problems/:id", problemsHandlers.GETProblemByID(ctx), utils.AuthMiddleware(true))
-	e.GET("/problems/:id/submits", problemsHandlers.GETSubmitsByID(ctx))
+	e.GET("/problems/:id/submits", problemsHandlers.GETSubmitsByID(ctx), utils.AuthMiddleware(true))
 	e.GET("/problems/:id/solve", problemsHandlers.GETSolveByID(ctx), utils.AuthMiddleware(false))
 
 	e.GET("/submits/:id", submitsHandlers.GETSubmitsByID(ctx), utils.AuthMiddleware(false))
