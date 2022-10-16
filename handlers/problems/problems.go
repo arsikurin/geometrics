@@ -89,6 +89,16 @@ func GETSubmitsByID(ctx context.Context) echo.HandlerFunc {
 			return echo.ErrNotFound
 		}
 
+		user, ok := c.Get("user").(*jwt.Token)
+		if !ok {
+			return errors.New("assert token failed in get problem by id")
+		}
+
+		claims, ok := user.Claims.(*auth.JWTCustomClaims)
+		if !ok {
+			return errors.New("assert claims failed in get problem by id")
+		}
+
 		problem, err := models.Problems(
 			Select(models.ProblemTableColumns.ID, models.ProblemColumns.Name, models.ProblemColumns.Description),
 			models.ProblemWhere.ID.EQ(id),
@@ -107,9 +117,10 @@ func GETSubmitsByID(ctx context.Context) echo.HandlerFunc {
 			return errors.WithMessage(err, "get submits failed in get problem by id")
 		}
 
-		return c.Render(http.StatusOK, "problem.gohtml", map[string]interface{}{ //nolint:wrapcheck
+		return c.Render(http.StatusOK, "submits.gohtml", map[string]interface{}{ //nolint:wrapcheck
 			"submits": submits,
 			"problem": problem,
+			"current": claims.UserID,
 		})
 	}
 }

@@ -26,6 +26,7 @@ import (
 	coursesHandlers "geometrics/handlers/courses"
 	problemsHandlers "geometrics/handlers/problems"
 	profilesHandlers "geometrics/handlers/profiles"
+	submitsHandlers "geometrics/handlers/submits"
 	"geometrics/types"
 	"geometrics/utils"
 )
@@ -101,6 +102,8 @@ func main() {
 	e.GET("/problems/:id", problemsHandlers.GETProblemByID(ctx), utils.AuthMiddleware(true))
 	e.GET("/problems/:id/submits", problemsHandlers.GETSubmitsByID(ctx))
 	e.GET("/problems/:id/solve", problemsHandlers.GETSolveByID(ctx), utils.AuthMiddleware(false))
+
+	e.GET("/submits/:id", submitsHandlers.GETSubmitsByID(ctx), utils.AuthMiddleware(false))
 
 	e.GET("/courses/:id", coursesHandlers.GETCourseByID(ctx))
 

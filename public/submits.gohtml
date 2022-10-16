@@ -31,7 +31,7 @@
 <main class="m-5 h-screen">
 
     <div class="description">
-        <p class="text-2xl mb-2">{{ .problem.ID }}. {{ .problem.ID }}</p>
+        <p class="text-2xl mb-2">{{ .problem.ID }}. {{ .problem.Name }}</p>
     </div>
 
     <div class="submits">
@@ -51,8 +51,8 @@
             {{ range .submits }}
                 <tr>
                     <td class="py-3">{{ .ID }}</td>
-                    <td>{{ .StatusS }}</td>
-                    <td>{{ .CreatedAtS }}</td>
+                    <td>{{ statusStringify .Status }}</td>
+                    <td>{{ .CreatedAt.Format "15:04:05 02/01/2006" }}</td>
                     <td><a href="/submits/{{ .ID }}" class="bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded">Посмотреть</a>
                     </td>
                 </tr>
