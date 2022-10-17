@@ -22,7 +22,7 @@ func GETCourseByID(ctx context.Context) echo.HandlerFunc {
 
 		if isExists, err := models.Courses(Where("id=?", id)).ExistsG(ctx); !isExists {
 			if err != nil {
-				return errors.WithMessage(err, "check whether user exists failed in get course by id")
+				return errors.WithMessage(err, "check whether course exists failed in get course by id")
 			}
 
 			return echo.ErrNotFound

@@ -33,7 +33,7 @@ func GETProfileByID(ctx context.Context) echo.HandlerFunc {
 
 		user, err := models.Users(Where("id=?", id)).OneG(ctx)
 		if err != nil {
-			return errors.WithMessage(err, "get user from the db failed in get profile by id")
+			return errors.WithMessage(err, "get user failed in get profile by id")
 		}
 
 		return c.Render(http.StatusOK, "profile.gohtml", map[string]interface{}{ //nolint:wrapcheck

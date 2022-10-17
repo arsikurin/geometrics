@@ -168,7 +168,7 @@ func CheckProblem(id string, solution string) (types.ProblemResult, error) {
 	return types.ProblemResult(res), nil
 }
 
-func InsertSubmit(ctx context.Context, c echo.Context, id int, status int, solution string) {
+func InsertSubmit(ctx context.Context, c echo.Context, id int, status types.ProblemResult, solution string) {
 	user, ok := c.Get("user").(*jwt.Token)
 	if !ok {
 		c.Logger().Error("assert token failed in post problem by id")
@@ -186,7 +186,7 @@ func InsertSubmit(ctx context.Context, c echo.Context, id int, status int, solut
 	submit := models.Submit{
 		UserID:      claims.UserID,
 		ProblemID:   id,
-		Status:      status,
+		Status:      int(status),
 		SolutionRaw: solution,
 	}
 

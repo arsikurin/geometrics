@@ -36,7 +36,7 @@ func POSTProblemByID(ctx context.Context) echo.HandlerFunc {
 
 		if isExists, err := models.Problems(Where("id=?", id)).ExistsG(ctx); !isExists {
 			if err != nil {
-				return errors.WithMessage(err, "check whether problem exists failed in patch problem by id")
+				return errors.WithMessage(err, "check whether problem exists failed in post problem by id")
 			}
 
 			return echo.ErrNotFound
@@ -48,7 +48,7 @@ func POSTProblemByID(ctx context.Context) echo.HandlerFunc {
 		}
 
 		if err := c.Validate(ppr); err != nil {
-			return errors.WithMessage(err, "validation failed in post problem by id")
+			return echo.NewHTTPError(http.StatusBadRequest, errors.WithMessage(err, "validation failed in post problem by id"))
 		}
 
 		res, err := utils.CheckProblem(strconv.Itoa(id), ppr.GgbBase64)
@@ -56,7 +56,7 @@ func POSTProblemByID(ctx context.Context) echo.HandlerFunc {
 			c.Logger().Error(err)
 		}
 
-		go utils.InsertSubmit(ctx, c, id, int(res), ppr.GgbBase64)
+		go utils.InsertSubmit(ctx, c, id, res, ppr.GgbBase64)
 
 		return c.JSON(http.StatusOK, echo.Map{ //nolint:wrapcheck
 			"code":   http.StatusOK,
@@ -74,7 +74,7 @@ func PUTProblem(ctx context.Context) echo.HandlerFunc {
 		}
 
 		if err := c.Validate(ppr); err != nil {
-			return errors.WithMessage(err, "validation failed in put problem")
+			return err
 		}
 
 		problem := models.Problem{
