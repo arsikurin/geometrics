@@ -62,6 +62,7 @@ func POSTProblemByID(ctx context.Context) echo.HandlerFunc {
 			"code":   http.StatusOK,
 			"status": "ok",
 			"result": res,
+			"detail": res.String(),
 		})
 	}
 }
@@ -74,7 +75,7 @@ func PUTProblem(ctx context.Context) echo.HandlerFunc {
 		}
 
 		if err := c.Validate(ppr); err != nil {
-			return err
+			return echo.NewHTTPError(http.StatusBadRequest, errors.WithMessage(err, "validation failed in put problem"))
 		}
 
 		problem := models.Problem{
@@ -85,7 +86,7 @@ func PUTProblem(ctx context.Context) echo.HandlerFunc {
 
 		err := problem.InsertG(ctx, boil.Infer())
 		if err != nil {
-			return errors.WithMessage(err, "insert problem failed in put problem by id")
+			return errors.WithMessage(err, "insert problem failed in put problem")
 		}
 
 		return c.JSON(http.StatusOK, echo.Map{ //nolint:wrapcheck
@@ -117,7 +118,8 @@ func PATCHProblemByID(ctx context.Context) echo.HandlerFunc {
 		}
 
 		if err := c.Validate(ppr); err != nil {
-			return errors.WithMessage(err, "validation failed in patch problem by id")
+			return echo.NewHTTPError(http.StatusBadRequest, errors.WithMessage(err, "validation failed in patch problem by id"))
+
 		}
 
 		problem, err := models.FindProblemG(ctx, id)
@@ -183,7 +185,8 @@ func Login(ctx context.Context) echo.HandlerFunc {
 		}
 
 		if err := c.Validate(lcr); err != nil {
-			return errors.WithMessage(err, "validation failed in login")
+			return echo.NewHTTPError(http.StatusBadRequest, errors.WithMessage(err, "validation failed in login"))
+
 		}
 
 		// username := c.FormValue("login")

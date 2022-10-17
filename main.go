@@ -24,6 +24,7 @@ import (
 	adminHandlers "geometrics/handlers/admin"
 	APIHandlers "geometrics/handlers/api"
 	coursesHandlers "geometrics/handlers/courses"
+	indexHandlers "geometrics/handlers/index"
 	problemsHandlers "geometrics/handlers/problems"
 	profilesHandlers "geometrics/handlers/profiles"
 	submitsHandlers "geometrics/handlers/submits"
@@ -92,7 +93,7 @@ func main() {
 	e.Use(utils.LoggerMiddleware())
 
 	// Handlers
-	e.File("", "public/index.gohtml")
+	e.GET("", indexHandlers.GETIndex(ctx))
 
 	e.File("/login", "public/login.html")
 
