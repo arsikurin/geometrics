@@ -135,7 +135,6 @@ func GETSolveByID(ctx context.Context) echo.HandlerFunc {
 		}
 
 		problem, err := models.Problems(
-			Select(models.ProblemTableColumns.ID, models.ProblemColumns.Name, models.ProblemColumns.Description, models.ProblemColumns.SolutionRaw),
 			models.ProblemWhere.ID.EQ(id),
 		).OneG(ctx)
 		if err != nil {
