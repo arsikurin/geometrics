@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ .error }}</title>
-    <link rel="icon" href="/images/forbidden.svg"/>
+    <link rel="icon" href="static/images/forbidden.svg"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/font-hack/2.018/css/hack.min.css"/>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
@@ -87,8 +87,7 @@
 <div class="text__error" id="text__error" data-text="{{ .error }}"></div>
 <div class="text__detail">{{ .detail }}</div>
 <div class="text__fix">{{ .fix }}</div>
-<div class="text__link">
-    <a id="text__link" href="{{ .link }}" data-text="{{ .link_text }}"></a>
+<div class="text__link"><a id="text__link" href="{{ .link }}" data-text="{{ .link_text }}"></a>
 </div>
 <script>
     function setCharAt(str, index, chr) {
