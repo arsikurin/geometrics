@@ -19,17 +19,18 @@ const loginRegEx = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}
 // })
 
 function displayErr(text) {
-    const status = document.getElementById("status");
-    status.classList.add("shown");
+    const status = document.getElementById("error_msg");
     status.innerHTML = text;
-    setTimeout(() => {
-        status.classList.remove("shown");
-    }, 2500);
 }
 
 function verifyCreds() {
     let login = document.getElementById("login").value;
     let password = document.getElementById("password").value;
+    let first_name = document.getElementById("first_name").value;
+    let last_name = document.getElementById("last_name").value;
+    let grade = document.getElementById("grade").value;
+    let school = document.getElementById("school").value;
+
 
     if (login === "") {
         displayErr("Email not specified");
@@ -38,7 +39,7 @@ function verifyCreds() {
     } else if (!loginRegEx.test(login)) {
         displayErr("Please enter a valid login");
     } else {
-        let resp = obtainToken(login, password);
+        let resp = obtainToken(login, password, first_name, last_name, grade, school);
         if (resp["status"] !== "ok") {
             console.log(resp);
             let payload = "";
@@ -52,19 +53,23 @@ function verifyCreds() {
                     payload += `${elem["Field"]}: ${elem["Message"]}\n`;
                 }
             }
-            document.getElementById("status-text").innerText = payload;
-            displayErr(`Ошибка: ${resp["message"]}`);
+            // document.getElementById("status-text").innerText = payload;
+            displayErr(`${resp["detail"]}`);
         }
     }
 }
 
-function obtainToken(login, password) {
+function obtainToken(login, password, first_name, last_name, grade, school) {
     let xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/v1/login", false);
+    xhr.open("POST", "http://localhost:1323/api/v1/register", false);
     xhr.setRequestHeader("Content-Type", "application/json;charset=utf-8");
     xhr.send(JSON.stringify({
         "Login": login,
         "Password": password,
+        "FirstName": first_name,
+        "LastName": last_name,
+        "Grade": grade,
+        "School": school
     }));
 
     if (xhr.status === 200) {

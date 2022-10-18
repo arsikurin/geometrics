@@ -65,24 +65,33 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, _ echo.Con
 
 type (
 	POSTProblemReq struct {
-		GgbBase64 string `json:"ggb_base64" validate:"required,base64"` //nolint:tagliatelle
+		GgbBase64 string `json:"GgbBase64" validate:"required,base64"` //nolint:tagliatelle
 	}
 
 	PUTProblemReq struct {
-		Name           string `json:"name" validate:"required"`
-		Description    string `json:"description" validate:"required"`
-		SolutionBase64 string `json:"solution_base64" validate:"required,base64"` //nolint:tagliatelle
+		Name           string `json:"Name" validate:"required"`
+		Description    string `json:"Description" validate:"required"`
+		SolutionBase64 string `json:"SolutionBase64" validate:"required,base64"` //nolint:tagliatelle
 	}
 
 	PATCHProblemReq struct {
-		Name           string `json:"name,omitempty"`
-		Description    string `json:"description,omitempty"`
-		SolutionBase64 string `json:"solution_base64,omitempty" validate:"omitempty,base64"` //nolint:tagliatelle
+		Name           string `json:"Name,omitempty"`
+		Description    string `json:"Description,omitempty"`
+		SolutionBase64 string `json:"SolutionBase64,omitempty" validate:"omitempty,base64"` //nolint:tagliatelle
 	}
 
 	LoginReq struct {
-		Login    string `json:"login" validate:"required,email"`
-		Password string `json:"password" validate:"required,gte=8,lte=30"`
+		Login    string `json:"Login" validate:"required,email"`
+		Password string `json:"Password" validate:"required,gte=8,lte=30"`
+	}
+
+	RegisterReq struct {
+		Login     string `json:"Login" validate:"required,email"`
+		Password  string `json:"Password" validate:"required,gte=8,lte=30"`
+		FirstName string `json:"FirstName" validate:"required"`
+		LastName  string `json:"LastName" validate:"required"`
+		School    string `json:"School,omitempty" validate:"omitempty"`
+		Grade     string `json:"Grade,omitempty" validate:"omitempty"`
 	}
 
 	CustomValidator struct {

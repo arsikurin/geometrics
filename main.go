@@ -96,6 +96,7 @@ func main() {
 	e.GET("", indexHandlers.GETIndex(ctx))
 
 	e.File("/login", "public/login.html")
+	e.File("/register", "public/register.html")
 
 	e.GET("/profiles", profilesHandlers.GETProfile, utils.AuthMiddleware(true))
 	e.GET("/profiles/:id", profilesHandlers.GETProfileByID(ctx))
@@ -112,7 +113,8 @@ func main() {
 	apiG := e.Group("/api/v1")
 	{
 		apiG.File("", "public/indexAPI.html")
-		apiG.POST("/login", APIHandlers.Login(ctx))
+		apiG.POST("/login", APIHandlers.POSTLogin(ctx))
+		apiG.POST("/register", APIHandlers.POSTRegister(ctx))
 
 		// Problems group
 		problems := apiG.Group("/problems")

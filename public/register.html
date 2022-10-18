@@ -7,7 +7,7 @@
     <title>Geometrics</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="icon" href="static/images/icon.svg">
-    <script src="/static/js/login.js"></script>
+    <script src="static/js/register.js"></script>
 </head>
 <body>
 
@@ -35,7 +35,7 @@
                       inputmode="email" id="login" name="login" required type="text"
                       class="form-control block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
                       
-                      placeholder="Логин (email)"
+                      placeholder="Email"
                     />
                   </div>
                   <div class="mb-4">
@@ -43,6 +43,32 @@
                       type="password" id="password" inputmode="text" required name="password" 
                       class="form-control block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
                       placeholder="Пароль"
+                    />
+                  </div>
+                  <div class="mb-4">
+                    <input
+                      type="text" id="first_name" inputmode="text" required name="first_name" 
+                      class="form-control w-5/12 px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
+                      placeholder="Имя"
+                    />
+                    <input
+                      type="text" id="last_name" inputmode="text" required name="last_name" 
+                      class="form-control w-fit px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
+                      placeholder="Фамилия"
+                    />
+                  </div>
+                  <div class="mb-4">
+                    <input
+                      type="number" min="1" max="12" id="grade" inputmode="text" name="grade" 
+                      class="form-control block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
+                      placeholder="Класс"
+                    />
+                  </div>
+                  <div class="mb-4">
+                    <input
+                      type="text" id="school" inputmode="text" name="school" 
+                      class="form-control block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
+                      placeholder="Школа"
                     />
                   </div>
                   <div class="text-center pt-1 mb-5 pb-1">
@@ -53,25 +79,24 @@
                       onclick="verifyCreds();"
                       data-mdb-ripple="true"
                       data-mdb-ripple-color="light"
-                      
                       style="
                         background: linear-gradient(-90deg, rgba(9,9,121,1) 0%, rgba(0,255,132,1) 100%);
                         transition-duration: 1s;
                       "
                     >
-                      Войти
+                      Зарегистрироваться
                     </button>
                   </div>
                   <div class="flex items-center justify-between pb-6">
-                    <p class="mb-0 mr-2">Первый раз на сайте?</p>
+                    <p class="mb-0 mr-2">Уже зарегистрированы?</p>
                     <button
                       type="button"
                       class="inline-block px-6 py-2 border-2 border-blue-600 text-blue-600 font-medium text-xs leading-tight uppercase rounded hover:bg-black hover:bg-opacity-5 focus:outline-none focus:ring-0 transition duration-150 ease-in-out"
                       data-mdb-ripple="true"
                       data-mdb-ripple-color="light"
-                      onclick="location.href='register'"
+                      onclick="location.href='login'"
                     >
-                      Зарегистрироваться
+                      Войти в аккаунт
                     </button>
                   </div>
                 </form>

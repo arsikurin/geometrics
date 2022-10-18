@@ -9,6 +9,7 @@ import (
 
 	"github.com/friendsofgo/errors"
 	"github.com/labstack/echo/v4"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	. "github.com/volatiletech/sqlboiler/v4/queries/qm"
 
@@ -177,21 +178,21 @@ func DELETEProblemByID(ctx context.Context) echo.HandlerFunc {
 	}
 }
 
-func Login(ctx context.Context) echo.HandlerFunc {
+func POSTLogin(ctx context.Context) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		lcr := new(types.LoginReq)
-		if err := c.Bind(lcr); err != nil {
+		lr := new(types.LoginReq)
+		if err := c.Bind(lr); err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 		}
 
-		if err := c.Validate(lcr); err != nil {
+		if err := c.Validate(lr); err != nil {
 			return echo.NewHTTPError(http.StatusBadRequest, errors.WithMessage(err, "validation failed in login"))
 
 		}
 
 		// username := c.FormValue("login")
 		// password := c.FormValue("password")
-		if isExists, err := models.Users(Where("login=?", lcr.Login)).ExistsG(ctx); !isExists {
+		if isExists, err := models.Users(Where("login=?", lr.Login)).ExistsG(ctx); !isExists {
 			if err != nil {
 				return errors.WithMessage(err, "check whether user exists failed in login")
 			}
@@ -206,18 +207,94 @@ func Login(ctx context.Context) echo.HandlerFunc {
 			})
 		}
 
-		user, err := models.Users(Where("login=?", lcr.Login)).OneG(ctx)
+		user, err := models.Users(Where("login=?", lr.Login)).OneG(ctx)
 		if err != nil {
 			return errors.WithMessage(err, "get user from the db failed in login")
 		}
 
-		if lcr.Password != user.Password {
+		if lr.Password != user.Password {
 			return echo.ErrUnauthorized
 		}
 
 		t, err := auth.GenerateAccessToken(user)
 		if err != nil {
 			return errors.WithMessage(err, "generate access token failed in login")
+		}
+
+		c.SetCookie(&http.Cookie{
+			Name:     "token",
+			Value:    t,
+			Path:     "/",
+			Expires:  time.Now().Add(time.Hour * 24), //nolint:gomnd
+			Secure:   false,
+			HttpOnly: true,
+		})
+
+		return c.JSON(http.StatusOK, echo.Map{ //nolint:wrapcheck
+			"code":   http.StatusOK,
+			"status": "ok",
+			"token":  t,
+		})
+	}
+}
+
+func POSTRegister(ctx context.Context) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		rr := new(types.RegisterReq)
+		if err := c.Bind(rr); err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		}
+
+		if err := c.Validate(rr); err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, errors.WithMessage(err, "validation failed in register"))
+		}
+
+		// username := c.FormValue("login")
+		// password := c.FormValue("password")
+		if isExists, err := models.Users(Where("login=?", rr.Login)).ExistsG(ctx); isExists {
+			if err != nil {
+				return errors.WithMessage(err, "check whether user exists failed in login")
+			}
+
+			return c.JSON(http.StatusUnauthorized, echo.Map{ //nolint:wrapcheck
+				"code":   http.StatusBadRequest,
+				"status": "error",
+				"message": fmt.Sprintf(
+					"%d %s", http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized),
+				),
+				"detail": "user exists",
+			})
+		}
+		userGrade, err := strconv.Atoi(rr.Grade)
+		if err != nil {
+			userGrade = 0
+			c.Logger().Error(errors.WithMessage(err, "conversion grade to int failed in register"))
+		}
+
+		user := models.User{
+			Login:     rr.Login,
+			Password:  rr.Password,
+			Type:      int(types.Student),
+			FirstName: rr.FirstName,
+			LastName:  rr.LastName,
+			Grade: null.Int{
+				Int:   userGrade,
+				Valid: func() bool { return userGrade != 0 }(),
+			},
+			School: null.String{
+				String: rr.School,
+				Valid:  func() bool { return rr.School != "" }(),
+			},
+		}
+
+		err = user.InsertG(ctx, boil.Infer())
+		if err != nil {
+			return errors.WithMessage(err, "insert user failed in register")
+		}
+
+		t, err := auth.GenerateAccessToken(&user)
+		if err != nil {
+			return errors.WithMessage(err, "generate access token failed in register")
 		}
 
 		c.SetCookie(&http.Cookie{

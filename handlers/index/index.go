@@ -27,5 +27,3 @@ func GETIndex(ctx context.Context) echo.HandlerFunc {
 		})
 	}
 }
-
-// author_name (first_name + " " + last_name) + array of problems for each course
