@@ -212,6 +212,15 @@ func POSTLogin(ctx context.Context) echo.HandlerFunc {
 			return errors.WithMessage(err, "get user from the db failed in login")
 		}
 
+		go func() {
+			user.LastOnline = time.Now()
+
+			_, err := user.UpdateG(ctx, boil.Infer())
+			if err != nil {
+				c.Logger().Error(errors.WithMessage(err, "update user last online failed in login"))
+			}
+		}()
+
 		if lr.Password != user.Password {
 			return echo.ErrUnauthorized
 		}

@@ -14,6 +14,7 @@ import (
 
 	"geometrics/auth"
 	"geometrics/models"
+	"geometrics/types"
 )
 
 func GETProfileByID(ctx context.Context) echo.HandlerFunc {
@@ -36,9 +37,19 @@ func GETProfileByID(ctx context.Context) echo.HandlerFunc {
 			return errors.WithMessage(err, "get user failed in get profile by id")
 		}
 
+		solvedProblems, err := models.Submits(
+			Where("user_id=?", id),
+			Where("status=?", int(types.OK)),
+			Distinct("problem_id"),
+		).AllG(ctx)
+		if err != nil {
+			return errors.WithMessage(err, "get solved problems failed in get profile by id")
+		}
+
 		return c.Render(http.StatusOK, "profile.gohtml", map[string]interface{}{ //nolint:wrapcheck
-			"name": fmt.Sprintf("%s %s", user.FirstName, user.LastName),
-			"user": user,
+			"name":           fmt.Sprintf("%s %s", user.FirstName, user.LastName),
+			"user":           user,
+			"solvedProblems": len(solvedProblems),
 		})
 	}
 }
