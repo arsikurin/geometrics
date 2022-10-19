@@ -75,8 +75,8 @@
 
         let xhr = new XMLHttpRequest();
 
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4) {
+        xhr.onreadystatechange = () => {
+            if (xhr.readyState === 4) {
                 alert(readBody(xhr));
             }
         }
@@ -89,7 +89,7 @@
 
         xhr.onload = () => console.log(xhr.responseText);
 
-        let data = `{"ggb_base64": "` + ggbApplet.getBase64() + `"}`;
+        let data = `{"GgbBase64": "` + ggbApplet.getBase64() + `"}`;
 
         xhr.send(data);
     }

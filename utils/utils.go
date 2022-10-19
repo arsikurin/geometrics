@@ -151,7 +151,7 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 func CheckProblem(id string, solution string) (types.ProblemResult, error) {
 	var out, scriptErr bytes.Buffer
 
-	cmd := exec.Command("/usr/local/bin/python", "main.py", id, solution)
+	cmd := exec.Command("/usr/local/bin/python", "checkers", id, solution)
 	cmd.Stdout = &out
 	cmd.Stderr = &scriptErr
 
