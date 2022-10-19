@@ -19,12 +19,8 @@ const loginRegEx = /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}
 // })
 
 function displayErr(text) {
-    const status = document.getElementById("status");
-    status.classList.add("shown");
+    const status = document.getElementById("error_msg");
     status.innerHTML = text;
-    setTimeout(() => {
-        status.classList.remove("shown");
-    }, 2500);
 }
 
 function verifyCreds() {
@@ -39,21 +35,8 @@ function verifyCreds() {
         displayErr("Please enter a valid login");
     } else {
         let resp = obtainToken(login, password);
-        if (resp["status"] !== "ok") {
-            console.log(resp);
-            let payload = "";
-            if (typeof resp["detail"] !== "object") {
-                payload += resp["detail"].charAt(0).toUpperCase() + resp["detail"].slice(1);
-            } else {
-                for (let elem of resp["detail"]) {
-                    if (elem["Field"] === undefined || elem["Message"] === undefined) {
-                        continue;
-                    }
-                    payload += `${elem["Field"]}: ${elem["Message"]}\n`;
-                }
-            }
-            document.getElementById("status-text").innerText = payload;
-            displayErr(`Ошибка: ${resp["message"]}`);
+        if (resp["code"] === 401) {
+            displayErr("Неправильный логин или пароль");
         }
     }
 }
