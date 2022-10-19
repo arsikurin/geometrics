@@ -31,8 +31,10 @@
 <main class="m-5 h-screen">
     <img class="inline" src="/static/images/user.svg" alt="User Picture" width="100">
     <div class="inline text-3xl">{{.name}}</div>
-    <p class="text-lg">Школа: {{.user.School.Value}}<br>Класс: {{.user.Grade.Value}}<br>Решено задач: {{.solvedProblems}}<br>Последний
-        раз в сети: {{ .user.LastOnline.Format "15:04 02/01/2006" }} <br>Зарегистрирован: {{ .user.CreatedAt.Format "15:04:05 02/01/2006" }}</p>
+    <p class="text-lg">Школа: {{.user.School.Value}}<br>Класс: {{.user.Grade.Value}}<br>Решено
+        задач: {{.solvedProblems}}<br>Последний
+        раз в сети: {{ .user.LastOnline.Format "15:04 02/01/2006" }}
+        <br>Зарегистрирован: {{ .user.CreatedAt.Format "15:04:05 02/01/2006" }}</p>
 
 
 </main>

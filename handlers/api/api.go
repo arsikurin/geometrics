@@ -197,19 +197,16 @@ func POSTLogin(ctx context.Context) echo.HandlerFunc {
 				return errors.WithMessage(err, "check whether user exists failed in login")
 			}
 
-			return c.JSON(http.StatusUnauthorized, echo.Map{ //nolint:wrapcheck
-				"code":   http.StatusUnauthorized,
-				"status": "error",
-				"message": fmt.Sprintf(
-					"%d %s", http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized),
-				),
-				"detail": "invalid credentials",
-			})
+			return echo.ErrUnauthorized
 		}
 
 		user, err := models.Users(Where("login=?", lr.Login)).OneG(ctx)
 		if err != nil {
 			return errors.WithMessage(err, "get user from the db failed in login")
+		}
+
+		if lr.Password != user.Password {
+			return echo.ErrUnauthorized
 		}
 
 		go func() {
@@ -220,11 +217,6 @@ func POSTLogin(ctx context.Context) echo.HandlerFunc {
 				c.Logger().Error(errors.WithMessage(err, "update user last online failed in login"))
 			}
 		}()
-
-		if lr.Password != user.Password {
-			return echo.ErrUnauthorized
-		}
-
 		t, err := auth.GenerateAccessToken(user)
 		if err != nil {
 			return errors.WithMessage(err, "generate access token failed in login")
@@ -266,7 +258,7 @@ func POSTRegister(ctx context.Context) echo.HandlerFunc {
 			}
 
 			return c.JSON(http.StatusUnauthorized, echo.Map{ //nolint:wrapcheck
-				"code":   http.StatusBadRequest,
+				"code":   http.StatusUnauthorized,
 				"status": "error",
 				"message": fmt.Sprintf(
 					"%d %s", http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized),
