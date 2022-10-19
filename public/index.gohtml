@@ -34,24 +34,25 @@
     <div class="courses-list">
         {{ $context := .ctx }}
         {{ range $index, $element := .courses }}
-        <div class="course">
-            <div class="inline">
-                <a href="/courses/{{ .ID }}" class="text-lg hover:underline">{{ .Name }}</a>
-                {{ $author := .Author.OneG $context }}
-                <a href="/profile/{{ .AuthorID }}" class="hover:underline text-gray-600"> {{ $author.FirstName }} {{  $author.LastName }} </a>
+            <div class="course">
+                <div class="inline">
+                    <a href="/courses/{{ .ID }}" class="text-lg hover:underline">{{ .Name }}</a>
+                    {{ $author := .Author.OneG $context }}
+                    <a href="/profile/{{ .AuthorID }}"
+                       class="hover:underline text-gray-600"> {{ $author.FirstName }} {{  $author.LastName }} </a>
+                </div>
+                <div class="problems ml-10">
+                    <ul>
+                        {{ range .R.CoursesProblems }}
+                            <li>
+                                {{ $problem := .Problem.OneG $context }}
+                                <img src="static/images/task.svg" alt="Task icon" width="20" class="inline mr-3">1.
+                                <a href="/problems/{{ $problem.ID }}" class="hover:underline">{{ $problem.Name }}</a>
+                            </li>
+                        {{ end }}
+                    </ul>
+                </div>
             </div>
-            <div class="problems ml-10">
-                <ul>
-                    {{ range .R.CoursesProblems }}
-                    <li>
-                        {{ $problem := .Problem.OneG $context }}
-                        <img src="static/images/task.svg" alt="Task icon" width="20" class="inline mr-3">1.
-                        <a href="/problems/{{ $problem.ID }}" class="hover:underline">{{ $problem.Name }}</a>
-                    </li>
-                    {{ end }}
-                </ul>
-            </div>
-        </div>
         {{ end }}
     </div>
 </main>
