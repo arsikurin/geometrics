@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
+	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -150,6 +151,20 @@ func DELETEProblemByID(ctx context.Context) echo.HandlerFunc {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
 			return echo.ErrNotFound
+		}
+
+		user, ok := c.Get("user").(*jwt.Token)
+		if !ok {
+			return errors.New("assert token failed in delete problem by id")
+		}
+
+		claims, ok := user.Claims.(*auth.JWTCustomClaims)
+		if !ok {
+			return errors.New("assert claims failed in delete problem by id")
+		}
+
+		if !claims.IsAdmin {
+			return echo.ErrForbidden
 		}
 
 		if isExists, err := models.Problems(Where("id=?", id)).ExistsG(ctx); !isExists {
