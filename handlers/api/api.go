@@ -180,15 +180,14 @@ func DELETEProblemByID(ctx context.Context) echo.HandlerFunc {
 			return errors.WithMessage(err, "find problem failed in delete problem by id")
 		}
 
-		problemID, err := problem.DeleteG(ctx)
+		_, err = problem.DeleteG(ctx)
 		if err != nil {
 			return errors.WithMessage(err, "delete problem failed in delete problem by id")
 		}
 
 		return c.JSON(http.StatusOK, echo.Map{ //nolint:wrapcheck
-			"code":       http.StatusOK,
-			"status":     "ok",
-			"problem_id": problemID,
+			"code":   http.StatusOK,
+			"status": "ok",
 		})
 	}
 }
@@ -201,8 +200,7 @@ func POSTLogin(ctx context.Context) echo.HandlerFunc {
 		}
 
 		if err := c.Validate(lr); err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, errors.WithMessage(err, "validation failed in login"))
-
+			return err
 		}
 
 		// username := c.FormValue("login")

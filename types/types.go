@@ -65,19 +65,19 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, _ echo.Con
 
 type (
 	POSTProblemReq struct {
-		GgbBase64 string `json:"GgbBase64" validate:"required,base64"` //nolint:tagliatelle
+		GgbBase64 string `json:"GgbBase64" validate:"required,base64"`
 	}
 
 	PUTProblemReq struct {
 		Name           string `json:"Name" validate:"required"`
 		Description    string `json:"Description" validate:"required"`
-		SolutionBase64 string `json:"SolutionBase64" validate:"required,base64"` //nolint:tagliatelle
+		SolutionBase64 string `json:"SolutionBase64" validate:"required,base64"`
 	}
 
 	PATCHProblemReq struct {
 		Name           string `json:"Name,omitempty"`
 		Description    string `json:"Description,omitempty"`
-		SolutionBase64 string `json:"SolutionBase64,omitempty" validate:"omitempty,base64"` //nolint:tagliatelle
+		SolutionBase64 string `json:"SolutionBase64,omitempty" validate:"omitempty,base64"`
 	}
 
 	LoginReq struct {

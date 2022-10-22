@@ -6,8 +6,6 @@ DROP TABLE IF EXISTS submits;
 DROP TABLE IF EXISTS problems;
 DROP TABLE IF EXISTS users;
 
-CREATE DOMAIN PROBLEM_RESULT AS INT NOT NULL;
-
 CREATE TABLE users
 (
     id          SERIAL       NOT NULL,
@@ -18,8 +16,8 @@ CREATE TABLE users
     last_name   VARCHAR(100) NOT NULL,
     grade       INT,
     school      VARCHAR(100),
-    created_at  timestamp    NOT NULL DEFAULT NOW(),
-    last_online timestamp    NOT NULL,
+    created_at  TIMESTAMP    NOT NULL DEFAULT NOW(),
+    last_online TIMESTAMP    NOT NULL,
     timezone    TEXT         NOT NULL DEFAULT 'Europe/Moscow',
     PRIMARY KEY (id)
 );
@@ -36,12 +34,12 @@ CREATE TABLE problems
 
 CREATE TABLE submits
 (
-    id           SERIAL         NOT NULL,
-    user_id      INT            NOT NULL,
-    problem_id   INT            NOT NULL,
-    status       PROBLEM_RESULT NOT NULL,
-    solution_raw TEXT           NOT NULL,
-    created_at   timestamp      NOT NULL DEFAULT NOW(),
+    id           SERIAL    NOT NULL,
+    user_id      INT       NOT NULL,
+    problem_id   INT       NOT NULL,
+    status       INT       NOT NULL,
+    solution_raw TEXT      NOT NULL,
+    created_at   TIMESTAMP NOT NULL DEFAULT NOW(),
     PRIMARY KEY (id),
     FOREIGN KEY (problem_id) REFERENCES problems (id),
     FOREIGN KEY (user_id) REFERENCES users (id)
