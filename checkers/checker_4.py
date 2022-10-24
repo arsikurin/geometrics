@@ -1,15 +1,7 @@
+from checkers.utils import check_line
+
+
 def check(res):
-    right_x = 0.584853246
-    right_z = -0.950362901
-    
-    for element in res["elements"]:
-        coords = element.get("coords")
-        if element["type"] == "line":
-            delta_x = abs(right_x - (-coords["x"] / coords["y"]))
-            delta_z = abs(right_z - coords["z"] / coords["y"])
+    x, y, z = -0.5848532457, 1.0, -0.9503629013444963
 
-            if delta_x + delta_z < 1e-8:
-                return 0
-            
-
-    return 1
+    return check_line(res["elements"], [x, y, z])
