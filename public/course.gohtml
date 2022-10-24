@@ -39,9 +39,9 @@
 
     <div class="problems mt-2">
         <ul>
-            {{range .problems}}
+            {{range $index, $element := .problems}}
                 <li>
-                    <img src="/static/images/task.svg" alt="Task icon" width="20" class="inline mr-3">1.
+                    <img src="/static/images/task.svg" alt="Task icon" width="20" class="inline mr-3">{{ len (printf "a%*s" $index "") }}.
                     <a href="/problems/{{.ID}}?action=view" class="hover:underline">{{.Name}}</a>
                 </li>
             {{end}}

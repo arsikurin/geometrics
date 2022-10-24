@@ -38,15 +38,15 @@
                 <div class="inline">
                     <a href="/courses/{{ .ID }}" class="text-lg hover:underline">{{ .Name }}</a>
                     {{ $author := .Author.OneG $context }}
-                    <a href="/profile/{{ .AuthorID }}"
+                    <a href="/profiles/{{ .AuthorID }}"
                        class="hover:underline text-gray-600"> {{ $author.FirstName }} {{  $author.LastName }} </a>
                 </div>
                 <div class="problems ml-10">
                     <ul>
-                        {{ range .R.CoursesProblems }}
+                        {{ range $index2, $element2 := .R.CoursesProblems }}
                             <li>
                                 {{ $problem := .Problem.OneG $context }}
-                                <img src="static/images/task.svg" alt="Task icon" width="20" class="inline mr-3">1.
+                                <img src="static/images/task.svg" alt="Task icon" width="20" class="inline mr-3">{{ len (printf "a%*s" $index2 "") }}. {{/* не спрашивайте как это работает оно просто прибавляет 1 к $index2 */}}
                                 <a href="/problems/{{ $problem.ID }}" class="hover:underline">{{ $problem.Name }}</a>
                             </li>
                         {{ end }}
