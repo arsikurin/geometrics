@@ -2,8 +2,10 @@ def dist(coords1, coords2):
     x1, y1, x2, y2 = coords1["x"], coords1["y"], coords2["x"], coords2["y"]
     return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)
 
+
 def eq(a, b):
     return abs(a - b) <= 1e-6
+
 
 def check(res):
     lenghts = [3.56 ** 2, 6.32 ** 2, 4.88 ** 2]

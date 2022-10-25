@@ -13,6 +13,5 @@ def check(res):
 
             if min(deltas) < 1e-8:
                 return 0
-            
 
     return 1
