@@ -33,11 +33,13 @@ function verifyCreds() {
 
 
     if (login === "") {
-        displayErr("Email not specified");
+        displayErr("Укажите email адрес");
     } else if (password === "") {
-        displayErr("Password not specified");
+        displayErr("Укажите пароль");
+    } else if (first_name === "" || last_name === "") {
+        displayErr("Укажите имя и фамилию");
     } else if (!loginRegEx.test(login)) {
-        displayErr("Please enter a valid login");
+        displayErr("Укажите правильный email адрес");
     } else {
         let resp = obtainToken(login, password, first_name, last_name, grade, school);
         if (resp["status"] !== "ok") {
