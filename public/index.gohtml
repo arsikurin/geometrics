@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Geometrics</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="icon" href="static/images/icon.svg">
+    <link rel="favicon" href="static/images/icon.svg">
+    <link rel="apple-touch-icon" sizes="256x256" href="static/images/apple-touch-icon.png">
 </head>
 <body>
 
@@ -46,7 +47,9 @@
                         {{ range $index2, $element2 := .R.CoursesProblems }}
                             <li>
                                 {{ $problem := .Problem.OneG $context }}
-                                <img src="static/images/task.svg" alt="Task icon" width="20" class="inline mr-3">{{ len (printf "a%*s" $index2 "") }}. {{/* не спрашивайте как это работает оно просто прибавляет 1 к $index2 */}}
+                                <img src="static/images/task.svg" alt="Task icon" width="20"
+                                     class="inline mr-3">{{ len (printf "a%*s" $index2 "") }}
+                                . {{/* не спрашивайте как это работает оно просто прибавляет 1 к $index2 */}}
                                 <a href="/problems/{{ $problem.ID }}" class="hover:underline">{{ $problem.Name }}</a>
                             </li>
                         {{ end }}

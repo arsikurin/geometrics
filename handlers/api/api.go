@@ -13,6 +13,7 @@ import (
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	. "github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"golang.org/x/crypto/bcrypt"
 
 	"geometrics/auth"
 	"geometrics/models"
@@ -216,7 +217,7 @@ func POSTLogin(ctx context.Context) echo.HandlerFunc {
 			return errors.WithMessage(err, "get user from the db failed in login")
 		}
 
-		if lr.Password != user.Password {
+		if err := bcrypt.CompareHashAndPassword(user.Password, []byte(lr.Password)); err != nil {
 			return echo.ErrUnauthorized
 		}
 
@@ -278,12 +279,17 @@ func POSTRegister(ctx context.Context) echo.HandlerFunc {
 		userGrade, err := strconv.Atoi(rr.Grade)
 		if err != nil {
 			userGrade = 0
-			c.Logger().Error(errors.WithMessage(err, "conversion grade to int failed in register"))
+			c.Logger().Info(errors.WithMessage(err, "conversion grade to int failed in register"))
+		}
+
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(rr.Password), 13)
+		if err != nil {
+			return errors.WithMessage(err, "hash password failed in register")
 		}
 
 		user := models.User{
 			Login:     rr.Login,
-			Password:  rr.Password,
+			Password:  hashedPassword,
 			Type:      int(types.Student),
 			FirstName: rr.FirstName,
 			LastName:  rr.LastName,
