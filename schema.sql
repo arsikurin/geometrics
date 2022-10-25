@@ -10,7 +10,7 @@ CREATE TABLE users
 (
     id          SERIAL       NOT NULL,
     login       TEXT         NOT NULL,
-    password    TEXT         NOT NULL,
+    password    BYTEA        NOT NULL,
     type        INT          NOT NULL DEFAULT 0,
     first_name  VARCHAR(100) NOT NULL,
     last_name   VARCHAR(100) NOT NULL,

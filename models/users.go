@@ -26,7 +26,7 @@ import (
 type User struct {
 	ID         int         `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Login      string      `boil:"login" json:"login" toml:"login" yaml:"login"`
-	Password   string      `boil:"password" json:"password" toml:"password" yaml:"password"`
+	Password   []byte      `boil:"password" json:"password" toml:"password" yaml:"password"`
 	Type       int         `boil:"type" json:"type" toml:"type" yaml:"type"`
 	FirstName  string      `boil:"first_name" json:"first_name" toml:"first_name" yaml:"first_name"`
 	LastName   string      `boil:"last_name" json:"last_name" toml:"last_name" yaml:"last_name"`
@@ -94,6 +94,15 @@ var UserTableColumns = struct {
 
 // Generated where
 
+type whereHelper__byte struct{ field string }
+
+func (w whereHelper__byte) EQ(x []byte) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
+func (w whereHelper__byte) NEQ(x []byte) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
+func (w whereHelper__byte) LT(x []byte) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
+func (w whereHelper__byte) LTE(x []byte) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
+func (w whereHelper__byte) GT(x []byte) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
+func (w whereHelper__byte) GTE(x []byte) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
+
 type whereHelpernull_Int struct{ field string }
 
 func (w whereHelpernull_Int) EQ(x null.Int) qm.QueryMod {
@@ -135,7 +144,7 @@ func (w whereHelpernull_Int) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNo
 var UserWhere = struct {
 	ID         whereHelperint
 	Login      whereHelperstring
-	Password   whereHelperstring
+	Password   whereHelper__byte
 	Type       whereHelperint
 	FirstName  whereHelperstring
 	LastName   whereHelperstring
@@ -147,7 +156,7 @@ var UserWhere = struct {
 }{
 	ID:         whereHelperint{field: "\"users\".\"id\""},
 	Login:      whereHelperstring{field: "\"users\".\"login\""},
-	Password:   whereHelperstring{field: "\"users\".\"password\""},
+	Password:   whereHelper__byte{field: "\"users\".\"password\""},
 	Type:       whereHelperint{field: "\"users\".\"type\""},
 	FirstName:  whereHelperstring{field: "\"users\".\"first_name\""},
 	LastName:   whereHelperstring{field: "\"users\".\"last_name\""},
