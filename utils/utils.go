@@ -115,7 +115,7 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 	} else if errors.As(err, &JWTValidationError) {
 		code = http.StatusForbidden
 		title = fmt.Sprintf("%d %s", code, http.StatusText(code))
-		detail = err.Error()
+		detail = "Consider logging in"
 	}
 
 	if code == http.StatusForbidden || code == http.StatusUnauthorized {
