@@ -31,11 +31,11 @@
 
 <main class="m-5 h-screen">
 
-    <p class="text-xl mb-2">Курсы</p>
+    <p class="text-3xl mb-2">Курсы</p>
     <div class="courses-list">
         {{ $context := .ctx }}
         {{ range $index, $element := .courses }}
-            <div class="course">
+            <div class="course mb-4">
                 <div class="inline">
                     <a href="/courses/{{ .ID }}" class="text-lg hover:underline">{{ .Name }}</a>
                     {{ $author := .Author.OneG $context }}

@@ -34,7 +34,9 @@
         <a class="text-2xl">{{.course.Name}}</a>
         <a href="/profiles/{{.course.AuthorID}}" class="hover:underline text-gray-700">{{.author}}</a>
     </div>
-    <p>{{.course.Description}}</p>
+    {{if .course.Description.Valid}}
+    <p>{{.course.Description.Value}}</p>
+    {{end}}
 
 
     <div class="problems mt-2">
