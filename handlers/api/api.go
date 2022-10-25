@@ -50,7 +50,7 @@ func POSTProblemByID(ctx context.Context) echo.HandlerFunc {
 		}
 
 		if err := c.Validate(ppr); err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, errors.WithMessage(err, "validation failed in post problem by id"))
+			return err
 		}
 
 		res, err := utils.CheckProblem(strconv.Itoa(id), ppr.GgbBase64)
@@ -77,7 +77,7 @@ func PUTProblem(ctx context.Context) echo.HandlerFunc {
 		}
 
 		if err := c.Validate(ppr); err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, errors.WithMessage(err, "validation failed in put problem"))
+			return err
 		}
 
 		problem := models.Problem{
@@ -120,7 +120,7 @@ func PATCHProblemByID(ctx context.Context) echo.HandlerFunc {
 		}
 
 		if err := c.Validate(ppr); err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, errors.WithMessage(err, "validation failed in patch problem by id"))
+			return err
 
 		}
 
@@ -203,8 +203,6 @@ func POSTLogin(ctx context.Context) echo.HandlerFunc {
 			return err
 		}
 
-		// username := c.FormValue("login")
-		// password := c.FormValue("password")
 		if isExists, err := models.Users(Where("login=?", lr.Login)).ExistsG(ctx); !isExists {
 			if err != nil {
 				return errors.WithMessage(err, "check whether user exists failed in login")
@@ -260,11 +258,9 @@ func POSTRegister(ctx context.Context) echo.HandlerFunc {
 		}
 
 		if err := c.Validate(rr); err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, errors.WithMessage(err, "validation failed in register"))
+			return err
 		}
 
-		// username := c.FormValue("login")
-		// password := c.FormValue("password")
 		if isExists, err := models.Users(Where("login=?", rr.Login)).ExistsG(ctx); isExists {
 			if err != nil {
 				return errors.WithMessage(err, "check whether user exists failed in login")
@@ -276,7 +272,7 @@ func POSTRegister(ctx context.Context) echo.HandlerFunc {
 				"message": fmt.Sprintf(
 					"%d %s", http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized),
 				),
-				"detail": "user exists",
+				"detail": "пользователь существует",
 			})
 		}
 		userGrade, err := strconv.Atoi(rr.Grade)
