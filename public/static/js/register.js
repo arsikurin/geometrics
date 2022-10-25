@@ -62,7 +62,7 @@ function verifyCreds() {
 
 function obtainToken(login, password, first_name, last_name, grade, school) {
     let xhr = new XMLHttpRequest();
-    xhr.open("POST", "http://localhost:1323/api/v1/register", false);
+    xhr.open("POST", "/api/v1/register", false);
     xhr.setRequestHeader("Content-Type", "application/json;charset=utf-8");
     xhr.send(JSON.stringify({
         "Login": login,
