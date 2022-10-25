@@ -12,16 +12,19 @@ def check_point(elements, right_coords, precision=1e-6):
     return 1
 
 
-def check_line(elements, right, precision=1e-6):
+def check_line(elements, right_coords, precision=1e-6):
+    if not isinstance(right_coords[0], list):
+        right_coords = [right_coords]
+
     for element in elements:
         coords = element.get("coords")
         if element["type"] == "line":
             delta_x = -coords["x"] / coords["z"]
             delta_y = coords["y"] / coords["z"]
 
-            delta = abs(delta_x + right[0] / right[2]) + abs(delta_y - right[1] / right[2])
+            deltas = [abs(delta_x + right[0] / right[2]) + abs(delta_y - right[1] / right[2]) for right in right_coords]
 
-            if delta < precision:
+            if min(deltas) < precision:
                 return 0
     return 1
 
@@ -34,12 +37,12 @@ def check_triangle(elements, lenghts, precision=1e-6):
         x1, y1, x2, y2 = coords1["x"], coords1["y"], coords2["x"], coords2["y"]
         return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)
 
-    lenghts = [10.132, 30.946, 11.056016339064282]
     points = []
     for element in elements:
         if element["type"] != "point":
             continue
         points.append(element)
+
     for element in points:
         coords = element.get("coords")
         B = []
