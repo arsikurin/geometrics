@@ -1,4 +1,4 @@
-from checkers.utils import check_point
+from utils import check_point
 
 
 def check(res):

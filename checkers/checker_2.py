@@ -1,4 +1,4 @@
-from checkers.utils import check_line
+from utils import check_line
 
 
 def check(res):
