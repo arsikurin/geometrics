@@ -21,7 +21,6 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 
-	adminHandlers "geometrics/handlers/admin"
 	APIHandlers "geometrics/handlers/api"
 	coursesHandlers "geometrics/handlers/courses"
 	indexHandlers "geometrics/handlers/index"
@@ -86,10 +85,10 @@ func main() {
 	e.Use(middleware.RemoveTrailingSlashWithConfig(middleware.TrailingSlashConfig{
 		RedirectCode: http.StatusMovedPermanently,
 	}))
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"*"},
-		AllowMethods: []string{http.MethodGet, http.MethodPost},
-	}))
+	// e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+	// 	AllowOrigins: []string{"*"},
+	// 	AllowMethods: []string{http.MethodGet, http.MethodPost},
+	// }))
 	e.Use(utils.LoggerMiddleware())
 
 	// Handlers
@@ -127,14 +126,6 @@ func main() {
 			problems.PATCH("/:id", APIHandlers.PATCHProblemByID(ctx))
 			problems.DELETE("/:id", APIHandlers.DELETEProblemByID(ctx))
 		}
-	}
-
-	// Admin group
-	admin := e.Group("/admin")
-	{
-		admin.Use(utils.AuthMiddleware(false))
-
-		admin.GET("", adminHandlers.Admin)
 	}
 
 	// Graceful shutdown

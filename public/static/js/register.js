@@ -52,11 +52,10 @@ function verifyCreds() {
                     if (elem["Field"] === undefined || elem["Message"] === undefined) {
                         continue;
                     }
-                    payload += `${elem["Field"]}: ${elem["Message"]}\n`;
+                    payload += `${elem["Field"]}: ${elem["Message"]}<br>`;
                 }
             }
-            // document.getElementById("status-text").innerText = payload;
-            displayErr(`${resp["detail"]}`);
+            displayErr(payload);
         }
     }
 }
