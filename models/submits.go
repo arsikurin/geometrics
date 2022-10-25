@@ -29,8 +29,6 @@ type Submit struct {
 	Status      int       `boil:"status" json:"status" toml:"status" yaml:"status"`
 	SolutionRaw string    `boil:"solution_raw" json:"solution_raw" toml:"solution_raw" yaml:"solution_raw"`
 	CreatedAt   time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	CreatedAtS  string    `boil:"created_at_s" json:"created_at_s" toml:"created_at_s" yaml:"created_at_s"`
-	StatusS     string    `boil:"status_s" json:"status_s" toml:"status_s" yaml:"status_s"`
 
 	R *submitR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L submitL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -43,8 +41,6 @@ var SubmitColumns = struct {
 	Status      string
 	SolutionRaw string
 	CreatedAt   string
-	CreatedAtS  string
-	StatusS     string
 }{
 	ID:          "id",
 	UserID:      "user_id",
@@ -52,8 +48,6 @@ var SubmitColumns = struct {
 	Status:      "status",
 	SolutionRaw: "solution_raw",
 	CreatedAt:   "created_at",
-	CreatedAtS:  "created_at_s",
-	StatusS:     "status_s",
 }
 
 var SubmitTableColumns = struct {
@@ -63,8 +57,6 @@ var SubmitTableColumns = struct {
 	Status      string
 	SolutionRaw string
 	CreatedAt   string
-	CreatedAtS  string
-	StatusS     string
 }{
 	ID:          "submits.id",
 	UserID:      "submits.user_id",
@@ -72,8 +64,6 @@ var SubmitTableColumns = struct {
 	Status:      "submits.status",
 	SolutionRaw: "submits.solution_raw",
 	CreatedAt:   "submits.created_at",
-	CreatedAtS:  "submits.created_at_s",
-	StatusS:     "submits.status_s",
 }
 
 // Generated where
@@ -106,8 +96,6 @@ var SubmitWhere = struct {
 	Status      whereHelperint
 	SolutionRaw whereHelperstring
 	CreatedAt   whereHelpertime_Time
-	CreatedAtS  whereHelperstring
-	StatusS     whereHelperstring
 }{
 	ID:          whereHelperint{field: "\"submits\".\"id\""},
 	UserID:      whereHelperint{field: "\"submits\".\"user_id\""},
@@ -115,8 +103,6 @@ var SubmitWhere = struct {
 	Status:      whereHelperint{field: "\"submits\".\"status\""},
 	SolutionRaw: whereHelperstring{field: "\"submits\".\"solution_raw\""},
 	CreatedAt:   whereHelpertime_Time{field: "\"submits\".\"created_at\""},
-	CreatedAtS:  whereHelperstring{field: "\"submits\".\"created_at_s\""},
-	StatusS:     whereHelperstring{field: "\"submits\".\"status_s\""},
 }
 
 // SubmitRels is where relationship names are stored.
@@ -157,9 +143,9 @@ func (r *submitR) GetUser() *User {
 type submitL struct{}
 
 var (
-	submitAllColumns            = []string{"id", "user_id", "problem_id", "status", "solution_raw", "created_at", "created_at_s", "status_s"}
+	submitAllColumns            = []string{"id", "user_id", "problem_id", "status", "solution_raw", "created_at"}
 	submitColumnsWithoutDefault = []string{"user_id", "problem_id", "status", "solution_raw"}
-	submitColumnsWithDefault    = []string{"id", "created_at", "created_at_s", "status_s"}
+	submitColumnsWithDefault    = []string{"id", "created_at"}
 	submitPrimaryKeyColumns     = []string{"id"}
 	submitGeneratedColumns      = []string{}
 )

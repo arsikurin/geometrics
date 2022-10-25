@@ -2,7 +2,7 @@
 <module type="WEB_MODULE" version="4">
   <component name="FacetManager">
     <facet type="Python" name="Python facet">
-      <configuration sdkName="" />
+      <configuration sdkName="Poetry (geometrics) (2)" />
     </facet>
   </component>
   <component name="Go" enabled="true" />
@@ -10,5 +10,6 @@
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Poetry (geometrics) (2) interpreter library" level="application" />
   </component>
 </module>

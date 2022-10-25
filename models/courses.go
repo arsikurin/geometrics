@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -23,10 +24,10 @@ import (
 
 // Course is an object representing the database table.
 type Course struct {
-	ID          int    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	AuthorID    int    `boil:"author_id" json:"author_id" toml:"author_id" yaml:"author_id"`
-	Name        string `boil:"name" json:"name" toml:"name" yaml:"name"`
-	Description string `boil:"description" json:"description" toml:"description" yaml:"description"`
+	ID          int         `boil:"id" json:"id" toml:"id" yaml:"id"`
+	AuthorID    int         `boil:"author_id" json:"author_id" toml:"author_id" yaml:"author_id"`
+	Name        string      `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Description null.String `boil:"description" json:"description,omitempty" toml:"description" yaml:"description,omitempty"`
 
 	R *courseR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L courseL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -104,16 +105,54 @@ func (w whereHelperstring) NIN(slice []string) qm.QueryMod {
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
 }
 
+type whereHelpernull_String struct{ field string }
+
+func (w whereHelpernull_String) EQ(x null.String) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
+}
+func (w whereHelpernull_String) NEQ(x null.String) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
+}
+func (w whereHelpernull_String) LT(x null.String) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpernull_String) LTE(x null.String) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpernull_String) GT(x null.String) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpernull_String) GTE(x null.String) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+func (w whereHelpernull_String) IN(slice []string) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelpernull_String) NIN(slice []string) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
+func (w whereHelpernull_String) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpernull_String) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+
 var CourseWhere = struct {
 	ID          whereHelperint
 	AuthorID    whereHelperint
 	Name        whereHelperstring
-	Description whereHelperstring
+	Description whereHelpernull_String
 }{
 	ID:          whereHelperint{field: "\"courses\".\"id\""},
 	AuthorID:    whereHelperint{field: "\"courses\".\"author_id\""},
 	Name:        whereHelperstring{field: "\"courses\".\"name\""},
-	Description: whereHelperstring{field: "\"courses\".\"description\""},
+	Description: whereHelpernull_String{field: "\"courses\".\"description\""},
 }
 
 // CourseRels is where relationship names are stored.
@@ -155,8 +194,8 @@ type courseL struct{}
 
 var (
 	courseAllColumns            = []string{"id", "author_id", "name", "description"}
-	courseColumnsWithoutDefault = []string{"author_id", "name", "description"}
-	courseColumnsWithDefault    = []string{"id"}
+	courseColumnsWithoutDefault = []string{"author_id", "name"}
+	courseColumnsWithDefault    = []string{"id", "description"}
 	coursePrimaryKeyColumns     = []string{"id"}
 	courseGeneratedColumns      = []string{}
 )
