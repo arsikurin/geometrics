@@ -41,6 +41,7 @@ func AuthMiddleware(allowNoToken bool) echo.MiddlewareFunc {
 						},
 					},
 				})
+				c.Logger().Error(errors.WithMessage(err, "!!! auth middleware error"))
 
 				return nil
 			}
