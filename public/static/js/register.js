@@ -75,7 +75,8 @@ function obtainToken(login, password, first_name, last_name, grade, school) {
 
     if (xhr.status === 200) {
         console.log("trying to redirect...");
-        location.replace("/profiles");
+        // location.replace("/profiles");
+        location.href = "/profiles";
         console.log("after replace");
     } else {
         console.log(xhr.status, xhr.responseText);
