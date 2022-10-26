@@ -64,12 +64,10 @@ func GETProfile(c echo.Context) error {
 	if !ok {
 		return errors.New("assert claims failed in get profile")
 	}
-	fmt.Println(claims.UserID)
-	fmt.Println(claims.Name)
 
 	if claims.UserID != -1 {
-		return c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("/profiles/%d", claims.UserID)) //nolint:wrapcheck
+		return c.Redirect(http.StatusFound, fmt.Sprintf("/profiles/%d", claims.UserID)) //nolint:wrapcheck
 	}
 
-	return c.Redirect(http.StatusTemporaryRedirect, "/login") //nolint:wrapcheck
+	return c.Redirect(http.StatusFound, "/login") //nolint:wrapcheck
 }
