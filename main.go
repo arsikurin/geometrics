@@ -42,7 +42,7 @@ func main() {
 	`)
 
 	e := echo.New()
-	e.Debug = false
+	e.Debug = true
 	e.Logger.SetHeader(`{"level":"${level}","time":"${time_rfc3339}","prefix":"${prefix}","file":"${short_file}","line":"${line}"}`)
 
 	ctx := context.Background()

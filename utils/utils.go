@@ -119,12 +119,6 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 		detail = "Consider logging in"
 	}
 
-	if code == http.StatusForbidden || code == http.StatusUnauthorized {
-		link = "/login"
-		linkT = "click here to log in"
-		fix = "You have no power here"
-	}
-
 	if strings.Split(c.Path(), "/")[1] == "api" {
 		if err := c.JSON(code, map[string]interface{}{
 			"code":    code,
@@ -134,8 +128,15 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 		}); err != nil {
 			c.Logger().Error(err)
 		}
+
 	} else {
-		if err := c.Render(code, "error.gohtml", map[string]interface{}{
+		if code == http.StatusForbidden || code == http.StatusUnauthorized {
+			err := c.Redirect(http.StatusFound, "/login") //nolint:wrapcheck
+			if err != nil {
+				c.Logger().Error(err)
+			}
+
+		} else if err := c.Render(code, "error.gohtml", map[string]interface{}{
 			"error":     title,
 			"detail":    detail,
 			"link":      link,
