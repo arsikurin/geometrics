@@ -68,8 +68,8 @@ func GETProfile(c echo.Context) error {
 	fmt.Println(claims.Name)
 
 	if claims.UserID != -1 {
-		return c.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("/profiles/%d", claims.UserID)) //nolint:wrapcheck
+		return c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("/profiles/%d", claims.UserID)) //nolint:wrapcheck
 	}
 
-	return c.Redirect(http.StatusPermanentRedirect, "/login") //nolint:wrapcheck
+	return c.Redirect(http.StatusTemporaryRedirect, "/login") //nolint:wrapcheck
 }
