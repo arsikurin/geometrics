@@ -18,7 +18,7 @@ def check_line(elements, right_coords, precision=1e-6):
 
     for element in elements:
         coords = element.get("coords")
-        if element["type"] == "line":
+        if element["type"] in ["line", "ray"]:
             delta_x = -coords["x"] / coords["z"]
             delta_y = coords["y"] / coords["z"]
 
@@ -29,12 +29,17 @@ def check_line(elements, right_coords, precision=1e-6):
     return 1
 
 
-def check_triangle(elements, lenghts, precision=1e-6):
+def check_triangle(elements, lenghts, precision=1e-6, normalize_coords=False):
     def eq(a, b):
         return abs(a - b) <= precision
 
     def dist(coords1, coords2):
         x1, y1, x2, y2 = coords1["x"], coords1["y"], coords2["x"], coords2["y"]
+        if normalize_coords:
+            x1 = x1 / coords1["z"]
+            y1 = y1 / coords1["z"]
+            x2 = x2 / coords2["z"]
+            y2 = y2 / coords2["z"]
         return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)
 
     points = []

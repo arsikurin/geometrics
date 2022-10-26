@@ -42,7 +42,7 @@
         "showFullscreenButton": true,
         "scale": 1,
         "disableAutoScale": false,
-        "allowUpscale": false,
+        "allowUpscale": true,
         "clickToLoad": false,
         "appName": "geometry",
         "buttonRounding": 0.7,
@@ -114,6 +114,7 @@
        class="hover:cursor-pointer bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Отправить на
         проверку</a>
     <a class="font-bold" id="result_msg"></a>
+    <a href="/problems/{{ len (printf "a%*s" .problem.ID "") }}" class="text-base hover:underline text-gray-400 hover:text-gray-900 px-3">Следующая задача</a>
 </div>
 </body>
 </html>

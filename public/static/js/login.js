@@ -51,7 +51,13 @@ function obtainToken(login, password) {
     }));
 
     if (xhr.status === 200) {
-        location.replace("/profiles");
+        console.log("trying to redirect...");
+        // location.replace("/profiles");
+        location.href = "/profiles";
+        console.log("after replace");
+    } else {
+        console.log(xhr.status, xhr.responseText);
+        console.log(JSON.parse(xhr.responseText));
     }
 
     return JSON.parse(xhr.responseText);
