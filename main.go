@@ -54,9 +54,9 @@ func main() {
 	ctx := context.Background()
 
 	if e.Debug {
-		err := godotenv.Load(".env.development.local")
+		err := godotenv.Load(".env")
 		if err != nil {
-			e.Logger.Fatal("Error loading .env.development.local file")
+			e.Logger.Fatal("Error loading .env file")
 		}
 	}
 
